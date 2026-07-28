@@ -26,6 +26,21 @@ export function makeCommand() {
   };
 }
 
+/**
+ * Raw pointer movement to camera deltas in radians.
+ *
+ * Extracted so the sensitivity and invert-Y mapping can be asserted directly:
+ * driving it through a real pointer-lock session is not something a headless test
+ * can do faithfully, and the synthetic input path supplies radians that are
+ * already transformed.
+ */
+export function lookDelta(movementX, movementY, settings, out = { x: 0, y: 0 }) {
+  const sens = settings.sensitivity;
+  out.x = -movementX * sens;
+  out.y = -movementY * sens * (settings.invertY ? -1 : 1);
+  return out;
+}
+
 const KEY_BINDS = {
   KeyW: 'fwd', ArrowUp: 'fwd',
   KeyS: 'back', ArrowDown: 'back',
@@ -54,6 +69,7 @@ export class Input {
     this.pendingLook = { x: 0, y: 0 };
     this.wheel = 0;
     this.command = makeCommand();
+    this._look = { x: 0, y: 0 };
 
     this.onPauseRequested = () => {};
     this.onLockChange = () => {};
@@ -211,11 +227,11 @@ export class Input {
       return c;
     }
 
-    const sens = this.settings.sensitivity;
     c.moveX = (this._has('right') ? 1 : 0) - (this._has('left') ? 1 : 0);
     c.moveZ = (this._has('fwd') ? 1 : 0) - (this._has('back') ? 1 : 0);
-    c.lookX = -this.pendingLook.x * sens;
-    c.lookY = -this.pendingLook.y * sens * (this.settings.invertY ? -1 : 1);
+    lookDelta(this.pendingLook.x, this.pendingLook.y, this.settings, this._look);
+    c.lookX = this._look.x;
+    c.lookY = this._look.y;
     c.sprint = this._has('sprint');
     c.crouch = this._has('crouch');
     c.jump = this._pressed('jump');

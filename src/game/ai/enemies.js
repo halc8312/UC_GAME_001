@@ -5,7 +5,7 @@ import { AI_STATE, AI_STATE_ORDER, StateMachine } from './fsm.js';
 import {
   PERCEPTION, canSee, coverQuality, enemyAimCone, hears, updateAwareness,
 } from './perception.js';
-import { PathFollower, blendSteering, separation } from './navgraph.js';
+import { PathFollower, avoidObstacles, separation } from './navgraph.js';
 import { EnemyModel } from './enemymodel.js';
 
 export const ENEMY = {
@@ -31,6 +31,8 @@ export const ENEMY = {
   reactionTime: 0.5,
   loseSightTime: 3.0,
   searchDuration: 12,
+  searchDurationAlerted: 60,
+  huntRepathInterval: 2.0,
   coverSwapMin: 3,
   coverSwapMax: 6,
   corpseFade: 20,
@@ -88,7 +90,10 @@ export class Enemy {
     this.currentCover = null;
     this.repathTimer = 0;
     this.stuckTimer = 0;
+    this.aggressive = false;
+    this.huntTimer = 0;
     this._lastPos = v3();
+    this._avoid = v3();
 
     this.follower = new PathFollower(ctx.nav);
     this.model = new EnemyModel(ctx.materials);
@@ -99,6 +104,8 @@ export class Enemy {
     this._sep = v3();
     this._path = [];
     this._neighbours = [];
+    this._neighbourIds = [];
+    this._coverIds = [];
 
     this.fsm = this._makeFsm();
   }
@@ -175,7 +182,8 @@ export class Enemy {
           },
           update(self, dt) {
             const target = self.follower.advance(self.pos, 1.1);
-            if (target) self._steerTo(target, ENEMY.searchSpeed, dt);
+            const speed = self.aggressive ? ENEMY.combatSpeed * 0.85 : ENEMY.searchSpeed;
+            if (target) self._steerTo(target, speed, dt);
             else {
               self._brake(dt);
               self.desiredYaw += Math.sin(self.fsm.timeInState * 1.6) * dt * 2.6;
@@ -183,7 +191,18 @@ export class Enemy {
                 self._searchNearbyNode();
               }
             }
-            if (self.fsm.timeInState > ENEMY.searchDuration) {
+            // A contractor spawned into an active alarm is part of a coordinated
+            // reaction team: it keeps working toward the player's live position
+            // rather than sweeping a stale last-known point and going home.
+            if (self.aggressive) {
+              self.huntTimer -= dt;
+              if (self.huntTimer <= 0) {
+                self.huntTimer = ENEMY.huntRepathInterval;
+                self._advanceOnPlayer();
+              }
+            }
+            const limit = self.aggressive ? ENEMY.searchDurationAlerted : ENEMY.searchDuration;
+            if (self.fsm.timeInState > limit) {
               self.fsm.transition(
                 self.patrol.length > 1 ? AI_STATE.PATROL : AI_STATE.IDLE, 'search_expired',
               );
@@ -235,6 +254,8 @@ export class Enemy {
     this.burstPause = 0;
     this.hasGraceShot = true;
     this.stuckTimer = 0;
+    this.aggressive = !!def.alert;
+    this.huntTimer = 0;
     this.follower.reset();
     this.model.reset();
     this.model.setOpacity(1);
@@ -276,16 +297,22 @@ export class Enemy {
     return false;
   }
 
+  /**
+   * Wander to an adjacent node while searching.
+   *
+   * `NavGraph.neighbours` and `coverNodesNear` both return a *count* and fill the
+   * supplied array with node **ids**, not node objects — treating the return value
+   * as an array silently does nothing.
+   */
   _searchNearbyNode() {
     const nav = this.ctx.nav;
-    const near = nav.nearestNode(this.pos.x, this.pos.y, this.pos.z, { maxDist: 14 });
-    if (near === -1 || near === undefined) return;
-    const node = typeof near === 'string' ? nav.node(near) : nav.nodeAt(near);
+    const nearId = nav.nearestNode(this.pos.x, this.pos.y, this.pos.z, { maxDist: 14 });
+    if (nearId === -1 || nearId === undefined || nearId === null) return;
+    const node = nav.node(nearId);
     if (!node) return;
-    const neighbours = nav.neighbours(node.id, []);
-    if (!neighbours.length) return;
-    const pick = this.ctx.rng.pick(neighbours);
-    const target = nav.node(typeof pick === 'string' ? pick : pick.id);
+    const count = nav.neighbours(node.id, this._neighbourIds);
+    if (!count) return;
+    const target = nav.node(this._neighbourIds[this.ctx.rng.int(0, count - 1)]);
     if (target) this._pathTo(target);
   }
 
@@ -310,10 +337,20 @@ export class Enemy {
       separation(this._sep, this.pos, this._neighbours, ENEMY.separationDistance);
       this._steer.x += this._sep.x * 0.9;
       this._steer.z += this._sep.z * 0.9;
-      const l = Math.hypot(this._steer.x, this._steer.z) || 1;
-      this._steer.x /= l;
-      this._steer.z /= l;
     }
+
+    // Probe ahead and steer around geometry. Pure seek walks straight into a door
+    // jamb and pins there until the stuck timer fires; a short avoidance vector
+    // lets the path actually be followed through tight openings.
+    avoidObstacles(this._avoid, this.pos, this.vel, this.ctx.world, 1.6, ENEMY.radius);
+    this._steer.x += this._avoid.x * 1.1;
+    this._steer.z += this._avoid.z * 1.1;
+
+    const l = Math.hypot(this._steer.x, this._steer.z) || 1;
+    this._steer.x /= l;
+    this._steer.z /= l;
+
+    this._avoidCliff();
 
     const targetSpeed = speed;
     this.vel.x += this._steer.x * ENEMY.accel * dt;
@@ -326,6 +363,43 @@ export class Enemy {
     if (this.fsm.current !== AI_STATE.COMBAT) {
       this.desiredYaw = Math.atan2(-this._steer.x, -this._steer.z);
     }
+  }
+
+  /**
+   * Refuse to walk off a drop while path-following.
+   *
+   * Waypoint-to-waypoint steering is a straight line, and a straight line between
+   * two points on a staircase landing can cross the flight below it. Without this,
+   * an enemy routed up the stair tower cuts the corner, slides down the lower
+   * flight, and then oscillates at the bottom unable to reach its next waypoint.
+   * If the direct heading drops away, fan out and take the nearest heading that
+   * stays on solid, level ground.
+   */
+  _avoidCliff() {
+    const probe = 0.85;
+    const maxDrop = 0.7;
+    const groundAhead = (dx, dz) => {
+      const g = this.ctx.world.groundAt(
+        this.pos.x + dx * probe, this.pos.z + dz * probe, this.pos.y + 0.4, 0.05,
+      );
+      return g ? g.y : -Infinity;
+    };
+    if (groundAhead(this._steer.x, this._steer.z) >= this.pos.y - maxDrop) return;
+
+    const baseAngle = Math.atan2(this._steer.z, this._steer.x);
+    for (const offset of [0.6, -0.6, 1.2, -1.2, 1.8, -1.8]) {
+      const a = baseAngle + offset;
+      const dx = Math.cos(a);
+      const dz = Math.sin(a);
+      if (groundAhead(dx, dz) >= this.pos.y - maxDrop) {
+        this._steer.x = dx;
+        this._steer.z = dz;
+        return;
+      }
+    }
+    // Boxed in by drops on every heading: hold position rather than step off.
+    this._steer.x = 0;
+    this._steer.z = 0;
   }
 
   _brake(dt) {
@@ -422,7 +496,7 @@ export class Enemy {
     });
 
     // Resolve against the world first; only a clear line reaches the player.
-    const wall = this.ctx.world.raycast(ex, ey, ez, dx, dy, dz, ENEMY.range);
+    const wall = this.ctx.world.raycast(ex, ey, ez, dx, dy, dz, ENEMY.range, { sight: true });
     const hitPlayer = this.ctx.resolveEnemyShot(
       ex, ey, ez, dx, dy, dz,
       wall.hit ? wall.dist : ENEMY.range,
@@ -438,38 +512,56 @@ export class Enemy {
     }
   }
 
+  /** Path toward the player's own position when there is nothing worth holding. */
+  _advanceOnPlayer() {
+    const nav = this.ctx.nav;
+    const player = this.ctx.player;
+    const nearId = nav.nearestNode(player.pos.x, player.pos.y, player.pos.z, { maxDist: 40 });
+    const node = nearId === -1 ? null : nav.node(nearId);
+    if (node) {
+      this.currentCover = null;
+      this._pathTo(node);
+    }
+  }
+
+  /**
+   * Choose the next fighting position.
+   *
+   * The scoring deliberately does NOT maximise cover quality: `coverQuality` peaks
+   * at 1 when a node blocks line of sight completely, and a contractor parked
+   * somewhere it cannot see or shoot the player is not fighting, it is hiding. The
+   * target is partial cover (~0.65 — torso blocked, head clear) at an engagement
+   * range of about 9 m. When the player is far away or has not been seen recently,
+   * closing the distance beats holding any local cover at all.
+   */
   _pickCover(dist) {
     const nav = this.ctx.nav;
     const player = this.ctx.player;
-    const out = [];
-    // Prefer cover that is closer to the player when far, and holds ground when near.
-    const searchRadius = dist > 16 ? 16 : 11;
-    const found = nav.coverNodesNear(
-      this.pos.x, this.pos.y, this.pos.z, searchRadius,
+    const out = this._coverIds;
+    const mustAdvance = dist > 16 || this.timeSinceSeen > 1.5;
+
+    const count = nav.coverNodesNear(
+      this.pos.x, this.pos.y, this.pos.z, mustAdvance ? 18 : 11,
       player.pos, this.ctx.world, out,
     );
-    const list = Array.isArray(found) ? found : out;
-    if (!list.length) {
-      // No cover nearby: close the distance instead of standing in the open.
-      const near = nav.nearestNode(player.pos.x, player.pos.y, player.pos.z, { maxDist: 30 });
-      const node = typeof near === 'string' ? nav.node(near) : nav.nodeAt(near);
-      if (node) this._pathTo(node);
+    if (!count) {
+      this._advanceOnPlayer();
       return;
     }
+
     let best = null;
     let bestScore = -Infinity;
-    for (const entry of list) {
-      const node = entry.node || entry;
-      if (!node || node.x === undefined) continue;
+    for (let i = 0; i < count; i++) {
+      // `out` holds node ids, not node records.
+      const node = nav.node(out[i]);
+      if (!node) continue;
       const q = coverQuality(node, player.pos, this.ctx.world);
       const toPlayer = planarDist(node, player.pos);
       const travel = planarDist(node, this.pos);
-      // Good cover, near enough to shoot from, not a long walk, and not the node
-      // we are already standing on.
       const score =
-        q * 3.2 -
-        Math.abs(toPlayer - 9) * 0.12 -
-        travel * 0.09 +
+        (1 - Math.abs(q - 0.65)) * 2.4 -
+        Math.abs(toPlayer - 9) * (mustAdvance ? 0.34 : 0.12) -
+        travel * 0.06 +
         (this.currentCover === node.id ? -1.5 : 0) +
         this.ctx.rng.range(0, 0.6);
       if (score > bestScore) {
@@ -477,6 +569,14 @@ export class Enemy {
         best = node;
       }
     }
+
+    // If the best available position does not actually make progress toward the
+    // player, walk at them instead of shuffling between nodes in the same room.
+    if (mustAdvance && (!best || planarDist(best, player.pos) > dist - 3)) {
+      this._advanceOnPlayer();
+      return;
+    }
+
     if (best) {
       this.currentCover = best.id;
       this._pathTo(best);
@@ -590,9 +690,7 @@ export class Enemy {
     this.fsm.update(dt, this.ctx);
 
     // ---- movement integration ----
-    if (this.fsm.current !== AI_STATE.COMBAT || !this.follower.active) {
-      this._brake(dt * 0.35);
-    }
+    if (!this.follower.active) this._brake(dt * 0.35);
     this.vel.y -= 22 * dt;
     this._moveState.height = this.height;
     const r = moveAndSlide(this.ctx.world, this._moveState, dt, {
@@ -609,7 +707,12 @@ export class Enemy {
         this.stuckTimer = 0;
         this.follower.reset();
         this.coverTimer = 0;
-        if (this.hasLastKnown) this._pathTo(this.lastKnown);
+        // Nudge free of whatever it is snagged on before asking for a new path,
+        // otherwise the fresh path starts from the same pinned position.
+        this.vel.x += this.ctx.rng.range(-2.5, 2.5);
+        this.vel.z += this.ctx.rng.range(-2.5, 2.5);
+        if (this.aggressive) this._advanceOnPlayer();
+        else if (this.hasLastKnown) this._pathTo(this.lastKnown);
       }
     } else {
       this.stuckTimer = 0;

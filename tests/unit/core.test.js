@@ -9,6 +9,7 @@ import { Pool } from '../../src/core/pool.js';
 import { EventBus } from '../../src/core/events.js';
 import { FIXED_DT, Loop } from '../../src/core/loop.js';
 import { DEFAULT_SETTINGS, sanitize } from '../../src/core/storage.js';
+import { lookDelta, makeCommand } from '../../src/core/input.js';
 import { Metrics } from '../../src/core/metrics.js';
 
 describe('mathx', () => {
@@ -388,6 +389,42 @@ describe('settings sanitisation', () => {
 
   it('rejects a boolean supplied for a numeric key', () => {
     expect(sanitize({ fov: true }).fov).toBe(DEFAULT_SETTINGS.fov);
+  });
+});
+
+describe('look transform', () => {
+  const base = { sensitivity: 0.002, invertY: false };
+
+  it('scales raw pointer movement by sensitivity', () => {
+    expect(lookDelta(100, 0, base).x).toBeCloseTo(-0.2, 9);
+    expect(lookDelta(0, 100, base).y).toBeCloseTo(-0.2, 9);
+  });
+
+  it('inverts only the vertical axis when invertY is set', () => {
+    const normal = lookDelta(100, 50, base);
+    const inverted = lookDelta(100, 50, { ...base, invertY: true });
+    expect(inverted.x).toBeCloseTo(normal.x, 9);
+    expect(inverted.y).toBeCloseTo(-normal.y, 9);
+  });
+
+  it('doubling sensitivity doubles the delta', () => {
+    const a = lookDelta(80, 40, base);
+    const b = lookDelta(80, 40, { ...base, sensitivity: 0.004 });
+    expect(b.x).toBeCloseTo(a.x * 2, 9);
+    expect(b.y).toBeCloseTo(a.y * 2, 9);
+  });
+
+  it('is zero for no movement and writes into the out parameter', () => {
+    const out = { x: 9, y: 9 };
+    lookDelta(0, 0, base, out);
+    expect(out).toEqual({ x: -0, y: -0 });
+  });
+
+  it('makeCommand starts fully neutral', () => {
+    const c = makeCommand();
+    expect(c.moveX).toBe(0);
+    expect(c.fire).toBe(false);
+    expect(c.slot).toBe(-1);
   });
 });
 

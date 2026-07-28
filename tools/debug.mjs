@@ -15,25 +15,28 @@ await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => window.__UC_READY === true, { timeout: 90000 });
 
 const shots = [
-  ['pad-eye',      33, 6.5, 1,    -Math.PI/2, -0.15, 0],
-  ['pad-high',     26, 16,  1,    -Math.PI/2, -0.55, 0],
-  ['pad-from-cw',  28, 6.5, -10,  -0.9,       -0.1,  0],
-  ['pad-eye-alarm',33, 6.5, 1,    -Math.PI/2, -0.15, 1],
-  ['hall-high',    -2, 8,   14,   0,          -0.5,  0],
+  ['cw-look-south', 28, 6.5, -20,  Math.PI,     -0.06, 3],
+  ['cw-look-east',  22, 6.5, -22,  -Math.PI/2,  -0.05, 3],
+  ['dock',          0,  0.1, 46,   0,           -0.03, 0],
+  ['heli',          33, 6.5, 1,    -Math.PI/2,  -0.08, 4],
 ];
-for (const [name, x, y, z, yaw, pitch, alarm] of shots) {
-  await page.evaluate(([x, y, z, yaw, pitch, alarm]) => {
+for (const [name, x, y, z, yaw, pitch, cp] of shots) {
+  await page.evaluate(([x, y, z, yaw, pitch, cp]) => {
     const g = window.__UC;
-    g.startMission(alarm ? 4 : 1);
-    g.step(200);
+    g.startMission(cp);
+    g.step(250);
     g.teleport(x, y, z, yaw);
     g.look(yaw, pitch);
     g.input({});
-    g.step(120);
-  }, [x, y, z, yaw, pitch, alarm]);
+    g.step(150);
+  }, [x, y, z, yaw, pitch, cp]);
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await page.screenshot({ path: `artifacts/screenshots/_dbg-${name}.png` });
   console.log('shot', name);
 }
+console.log('draws/tris:', JSON.stringify(await page.evaluate(() => {
+  const m = window.__UC.metrics();
+  return { draws: m.drawCalls, tris: m.triangles, level: m.level };
+})));
 await browser.close();
 process.exit(0);

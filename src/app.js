@@ -4,7 +4,7 @@ import { Input } from './core/input.js';
 import { FIXED_DT, Loop } from './core/loop.js';
 import { Metrics } from './core/metrics.js';
 import { clamp, clamp01, damp, planarDist } from './core/mathx.js';
-import { rng } from './core/rng.js';
+import { Rng, rng } from './core/rng.js';
 import { loadSettings, saveSettings } from './core/storage.js';
 
 import { RenderStack } from './engine/renderer.js';
@@ -44,6 +44,11 @@ export class Game {
     this.settings = loadSettings();
     this.metrics = new Metrics();
     this.rng = rng;
+    // Presentation-only randomness (screen shake, muzzle flash jitter) lives on
+    // its own stream. Sampling the simulation RNG from the render callback makes
+    // the gameplay stream depend on the frame rate, so a seeded run stops
+    // reproducing the moment the machine renders at a different speed.
+    this.fxRng = new Rng(0xf00dbeef);
     this.time = 0;
     this.booted = false;
     this.paused = false;
@@ -577,8 +582,8 @@ export class Game {
     if (this._shakeT > 0) {
       this._shakeT -= dt;
       const k = clamp01(this._shakeT / 0.2) * this._shakeAmp;
-      shakeX = (this.rng.next() - 0.5) * 0.035 * k;
-      shakeY = (this.rng.next() - 0.5) * 0.035 * k;
+      shakeX = (this.fxRng.next() - 0.5) * 0.035 * k;
+      shakeY = (this.fxRng.next() - 0.5) * 0.035 * k;
       if (this._shakeT <= 0) this._shakeAmp = 0;
     }
 
@@ -631,7 +636,7 @@ export class Game {
         this._muzzlePos.x, this._muzzlePos.y, this._muzzlePos.z,
         this._muzzleDir.x, this._muzzleDir.y, this._muzzleDir.z,
         this.weapons.def.id === 'shotgun' ? 1.5 : 1.0,
-        this.rng,
+        this.fxRng,
       );
     }
 

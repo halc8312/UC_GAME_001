@@ -172,6 +172,61 @@ describe('traversability', () => {
   });
 });
 
+describe('railings', () => {
+  const railings = colliders.filter((c) => c.tag === 'railing');
+
+  it('exist on every elevated walkway', () => {
+    expect(railings.length).toBeGreaterThan(10);
+  });
+
+  it('are at least waist height so they cannot be walked over', () => {
+    // Most are 1.1 m rails; the mezzanine stair is flanked by full-height cages.
+    for (const r of railings) {
+      expect(r.max.y - r.min.y).toBeGreaterThanOrEqual(1.05);
+    }
+  });
+
+  // Railings are drawn as open posts and rails. They must stop the player from
+  // falling but must not eat bullets or block the AI's line of sight, or shots
+  // that visibly pass between the posts would hit nothing.
+  it('do not block sight or gunfire', () => {
+    for (const r of railings) expect(r.blocksSight).toBe(false);
+  });
+
+  it('let a shot cross the catwalk railing but stop the player', () => {
+    // Across the catwalk's east railing at x = 30.
+    expect(world.lineOfSight(28, 7.0, -12, 34, 7.0, -12)).toBe(true);
+    const state = {
+      pos: { x: 29.5, y: 6.4, z: -12 },
+      vel: { x: 6, y: -1, z: 0 },
+      height: 1.8,
+      grounded: true,
+    };
+    for (let i = 0; i < 90; i++) {
+      state.vel.x = 6;
+      state.vel.y = -1;
+      moveAndSlide(world, state, 1 / 60);
+    }
+    expect(state.pos.x).toBeLessThan(30);
+  });
+
+  it('keep the player on the helipad', () => {
+    const state = {
+      pos: { x: 41, y: 6.4, z: 1 },
+      vel: { x: 0, y: 0, z: 0 },
+      height: 1.8,
+      grounded: true,
+    };
+    for (let i = 0; i < 180; i++) {
+      state.vel.x = 8;
+      state.vel.y = -1;
+      moveAndSlide(world, state, 1 / 60);
+    }
+    expect(state.pos.x).toBeLessThan(44);
+    expect(state.pos.y).toBeGreaterThan(6);
+  });
+});
+
 describe('navigation graph', () => {
   it('registers every node and edge', () => {
     expect(navGraph.nodeCount).toBe(NAV_NODES.length);

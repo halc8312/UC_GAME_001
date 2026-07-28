@@ -28,10 +28,17 @@ function wallWithDoor(min, max, axis, doorMin, doorMax, doorTop, surface) {
   return out;
 }
 
+/** Shared options for railing colliders (see `railing()` below). */
+const RAILING_OPTS = { tag: 'railing', blocksSight: false };
+
 /** Railing run: a solid 1.1 m barrier. Solid on purpose — the player must not fall. */
 function railing(min, max, y = 0) {
   return box([min[0], y, min[1]], [max[0], y + 1.1, max[1]], SURFACE.METAL, {
     tag: 'railing',
+    // Solid to movement, transparent to sight and gunfire — the visual is open
+    // posts and rails, so blocking shots with the collision slab would read as
+    // bullets hitting thin air.
+    blocksSight: false,
   });
 }
 
@@ -96,8 +103,8 @@ export function buildColliders() {
   push(box([-14, -0.6, 28], [20, 0, 34], SURFACE.CONCRETE, { tag: 'apron' }));
   push(railing([-14.4, 28], [-14, 34]));
   push(railing([20, 28], [20.4, 34]));
-  push(box([-14.4, 0, 33.9], [-8, 1.1, 34.3], SURFACE.METAL, { tag: 'railing' }));
-  push(box([8, 0, 33.9], [20.4, 1.1, 34.3], SURFACE.METAL, { tag: 'railing' }));
+  push(box([-14.4, 0, 33.9], [-8, 1.1, 34.3], SURFACE.METAL, RAILING_OPTS));
+  push(box([8, 0, 33.9], [20.4, 1.1, 34.3], SURFACE.METAL, RAILING_OPTS));
   push(box([2.4, 0, 29.2], [4.4, 1.3, 31.6], SURFACE.METAL, { tag: 'crate' }));
   push(box([-7.4, 0, 29.6], [-5.0, 1.3, 31.4], SURFACE.METAL, { tag: 'crate' }));
 
@@ -126,11 +133,11 @@ export function buildColliders() {
 
   // Mezzanine along the west wall, reached by a 35° stair ramp at the south end.
   push(ramp([-19, 0, 20], [-15.5, 4.2, 26], 'z', -1, SURFACE.GRATE, { tag: 'mezz_stair' }));
-  push(box([-19.2, 0, 19.6], [-15.3, 5.3, 20], SURFACE.METAL, { tag: 'railing' }));
-  push(box([-15.5, 1.0, 20], [-15.2, 5.3, 26], SURFACE.METAL, { tag: 'railing' }));
+  push(box([-19.2, 0, 19.6], [-15.3, 5.3, 20], SURFACE.METAL, RAILING_OPTS));
+  push(box([-15.5, 1.0, 20], [-15.2, 5.3, 26], SURFACE.METAL, RAILING_OPTS));
   push(box([-20, 4.0, 2], [-14.8, 4.2, 20], SURFACE.GRATE, { tag: 'mezzanine' }));
-  push(box([-15.1, 4.2, 2], [-14.8, 5.3, 20], SURFACE.METAL, { tag: 'railing' }));
-  push(box([-20, 4.2, 1.7], [-14.8, 5.3, 2], SURFACE.METAL, { tag: 'railing' }));
+  push(box([-15.1, 4.2, 2], [-14.8, 5.3, 20], SURFACE.METAL, RAILING_OPTS));
+  push(box([-20, 4.2, 1.7], [-14.8, 5.3, 2], SURFACE.METAL, RAILING_OPTS));
 
   // Overhead pipe runs (visual + sight blockers, walkable on top of nothing).
   push(box([-20, 7.4, 5.0], [16, 8.1, 6.2], SURFACE.METAL, { tag: 'pipe' }));
@@ -177,18 +184,18 @@ export function buildColliders() {
   push(ramp([13.5, 3.2, -28.5], [17.5, CATWALK_Y, -24], 'z', 1, SURFACE.GRATE, { tag: 'stair_2' }));
   push(box([13.5, CATWALK_Y - 0.2, -24], [18, CATWALK_Y, -22.6], SURFACE.GRATE, { tag: 'stair_top' }));
   push(box([12.5, 0, -28.5], [13.5, CATWALK_Y, -22.6], SURFACE.CONCRETE, { tag: 'stair_spine' }));
-  push(box([8.5, 3.2, -24.2], [12.5, 4.3, -24], SURFACE.METAL, { tag: 'railing' }));
+  push(box([8.5, 3.2, -24.2], [12.5, 4.3, -24], SURFACE.METAL, RAILING_OPTS));
 
   // ===== CATWALKS ==================================================
   const cy = CATWALK_Y;
   push(box([20, cy - 0.2, -25], [30, cy, -21], SURFACE.GRATE, { tag: 'catwalk_a' }));
   push(box([26, cy - 0.2, -25], [30, cy, 2], SURFACE.GRATE, { tag: 'catwalk_b' }));
   // Railings: solid, continuous — falling off the catwalk would soft-lock the mission.
-  push(box([20, cy, -25.4], [26.4, cy + 1.1, -25], SURFACE.METAL, { tag: 'railing' }));
-  push(box([20, cy, -21], [26, cy + 1.1, -20.6], SURFACE.METAL, { tag: 'railing' }));
-  push(box([25.6, cy, -21], [26, cy + 1.1, 2.4], SURFACE.METAL, { tag: 'railing' }));
-  push(box([30, cy, -25.4], [30.4, cy + 1.1, -6], SURFACE.METAL, { tag: 'railing' }));
-  push(box([26, cy, 2], [30.4, cy + 1.1, 2.4], SURFACE.METAL, { tag: 'railing' }));
+  push(box([20, cy, -25.4], [26.4, cy + 1.1, -25], SURFACE.METAL, RAILING_OPTS));
+  push(box([20, cy, -21], [26, cy + 1.1, -20.6], SURFACE.METAL, RAILING_OPTS));
+  push(box([25.6, cy, -21], [26, cy + 1.1, 2.4], SURFACE.METAL, RAILING_OPTS));
+  push(box([30, cy, -25.4], [30.4, cy + 1.1, -6], SURFACE.METAL, RAILING_OPTS));
+  push(box([26, cy, 2], [30.4, cy + 1.1, 2.4], SURFACE.METAL, RAILING_OPTS));
   // Cover on the catwalk run.
   push(box([27.0, cy, -16.0], [29.6, cy + 1.3, -14.4], SURFACE.METAL, { tag: 'crate' }));
   push(box([26.2, cy, -9.0], [28.2, cy + 1.3, -7.4], SURFACE.METAL, { tag: 'crate' }));
@@ -201,10 +208,10 @@ export function buildColliders() {
 
   // ===== HELIPAD ===================================================
   push(box([30, cy - 0.4, -6], [44, cy, 8], SURFACE.CONCRETE, { tag: 'helipad' }));
-  push(box([30, cy, -6.4], [44.4, cy + 1.1, -6], SURFACE.METAL, { tag: 'railing' }));
-  push(box([30, cy, 8], [44.4, cy + 1.1, 8.4], SURFACE.METAL, { tag: 'railing' }));
-  push(box([44, cy, -6.4], [44.4, cy + 1.1, 8.4], SURFACE.METAL, { tag: 'railing' }));
-  push(box([30, cy, 2], [30.4, cy + 1.1, 8.4], SURFACE.METAL, { tag: 'railing' }));
+  push(box([30, cy, -6.4], [44.4, cy + 1.1, -6], SURFACE.METAL, RAILING_OPTS));
+  push(box([30, cy, 8], [44.4, cy + 1.1, 8.4], SURFACE.METAL, RAILING_OPTS));
+  push(box([44, cy, -6.4], [44.4, cy + 1.1, 8.4], SURFACE.METAL, RAILING_OPTS));
+  push(box([30, cy, 2], [30.4, cy + 1.1, 8.4], SURFACE.METAL, RAILING_OPTS));
   // Extraction-hold cover: AC units and a supply stack.
   push(box([33.0, cy, -4.4], [35.6, cy + 1.5, -2.2], SURFACE.METAL, { tag: 'ac_unit' }));
   push(box([39.4, cy, 3.6], [42.0, cy + 1.5, 5.8], SURFACE.METAL, { tag: 'ac_unit' }));
@@ -280,6 +287,7 @@ export const NAV_NODES = [
   { id: 'tower_base', x: 10.4, y: 0, z: -23, zone: ZONES.STAIR_TOWER },
   { id: 'tower_mid', x: 10.4, y: 3.2, z: -29.5, zone: ZONES.STAIR_TOWER },
   { id: 'tower_land', x: 15.4, y: 3.2, z: -30, zone: ZONES.STAIR_TOWER },
+  { id: 'tower_f2', x: 15.4, y: 3.2, z: -28.0, zone: ZONES.STAIR_TOWER },
   { id: 'tower_up', x: 15.4, y: 5.26, z: -25.6, zone: ZONES.STAIR_TOWER },
   { id: 'tower_top', x: 15.8, y: CATWALK_Y, z: -23.4, zone: ZONES.STAIR_TOWER },
 
@@ -344,7 +352,7 @@ export const NAV_EDGES = [
   ['srv_rack_e', 'srv_core'],
 
   ['srv_e', 'tower_base'], ['tower_base', 'tower_mid'], ['tower_mid', 'tower_land'],
-  ['tower_land', 'tower_up'], ['tower_up', 'tower_top'], ['tower_top', 'cw_a1'],
+  ['tower_land', 'tower_f2'], ['tower_f2', 'tower_up'], ['tower_up', 'tower_top'], ['tower_top', 'cw_a1'],
 
   ['cw_a1', 'cw_a_cover'], ['cw_a1', 'cw_a2'], ['cw_a_cover', 'cw_a2'],
   ['cw_a2', 'cw_b1'], ['cw_b1', 'cw_b_cover1'], ['cw_b_cover1', 'cw_b2'],

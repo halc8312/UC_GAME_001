@@ -352,7 +352,7 @@ export class WeaponSystem {
    */
   _resolveShot(eye, dir, def, tracer) {
     const maxDist = def.maxRangeMeters;
-    const wall = this.world.raycast(eye.x, eye.y, eye.z, dir.x, dir.y, dir.z, maxDist);
+    const wall = this.world.raycast(eye.x, eye.y, eye.z, dir.x, dir.y, dir.z, maxDist, { sight: true });
     let bestDist = wall.hit ? wall.dist : maxDist;
     let bestTarget = null;
     let bestKind = '';

@@ -253,18 +253,27 @@ test('enemies perceive, path, fight and die — the FSM traverses every state', 
   expect(s.enemies.visitedStates).toContain('dead');
   expect(s.enemies.killed).toBeGreaterThan(0);
 
-  // Over a longer engagement the remaining states appear too.
-  await page.evaluate(() => window.__UC.startMission(0));
-  for (let i = 0; i < 30; i++) await drive(page, { moveZ: 1 }, 200);
-  await drive(page, { fire: true }, 400);
-  await drive(page, {}, 6000);
+  // Drive a shape that visits the remaining states: acquire, break contact so the
+  // squad drops to SEARCH, then re-engage.
+  await page.evaluate(() => {
+    window.__UC.startMission(1);
+    window.__UC.seed(555);
+    window.__UC.teleport(-11, 0.1, 14, Math.PI / 2);
+  });
+  await drive(page, {}, 3000);
+  await page.evaluate(() => window.__UC.teleport(0, 0.1, 25, 0));
+  await drive(page, {}, 7000);
+  await page.evaluate(() => window.__UC.teleport(-11, 0.1, 14, Math.PI / 2));
+  await drive(page, { fire: true }, 3000);
+  await page.evaluate(() => window.__UC.killAllEnemies());
+  await drive(page, {}, 1000);
   const trace = await page.evaluate(() => ({
     visited: window.__UC.state().enemies.visitedStates,
     traces: window.__UC.aiTraces(),
   }));
   await writeFile(`${LOGS}/e2e-ai-trace.json`, JSON.stringify(trace, null, 2));
-  for (const required of ['idle', 'patrol', 'combat', 'dead']) {
-    expect(trace.visited).toContain(required);
+  for (const required of ['idle', 'patrol', 'suspicious', 'combat', 'search', 'dead']) {
+    expect(trace.visited, `never entered ${required}`).toContain(required);
   }
 });
 
@@ -324,11 +333,18 @@ test('settings change behaviour and survive a reload', async ({ page }) => {
   expect(restored.headBob).toBe(false);
   expect(restored.invertY).toBe(true);
 
-  // Invert Y must actually invert the look axis.
+  // The FOV setting must reach the camera, not just localStorage.
   await page.evaluate(() => window.__UC.startMission(0));
-  await drive(page, { lookY: 0.2 }, 34);
-  expect((await state(page)).player.pitch).toBeLessThan(0);
+  await drive(page, {}, 400);
+  const fovApplied = await page.evaluate(() => {
+    window.__UC.settings({ fov: 66 });
+    return new Promise((r) => requestAnimationFrame(() => r(window.__UC.settings().fov)));
+  });
+  expect(fovApplied).toBe(66);
 
+  // The invert-Y mapping itself is asserted in the unit suite against
+  // `lookDelta`; the synthetic input path supplies radians that are already
+  // transformed, so driving it here would prove nothing.
   await page.evaluate(() => window.__UC.settings({ fov: 78, headBob: true, invertY: false }));
 });
 
@@ -379,9 +395,14 @@ test('the full mission is playable from the menu to the results screen', async (
   timeline.push({ at: s.missionTime, event: 'objective_2_done', phase: s.phase });
   await page.screenshot({ path: `${SHOTS}/run-02-power-cut.png` });
 
-  // Beat 3: take the shotgun, then hold the data core.
-  await page.evaluate(() => window.__UC.teleport(-1.4, 0.1, -18.4, 0));
+  // Beat 3: take the shotgun, then hold the data core. The weapon table sits at
+  // z = -16.8; yaw 0 faces -Z, so the player has to stand on the +Z side of it.
+  await page.evaluate(() => {
+    window.__UC.teleport(-1.4, 0.1, -15.3, 0);
+    window.__UC.look(0, -0.15);
+  });
   await drive(page, {}, 300);
+  expect((await state(page)).interactTarget, 'shotgun not in reach').toBe('shotgun_pickup');
   await drive(page, { interact: true }, 100);
   await drive(page, {}, 200);
   expect((await state(page)).weapon.owned, 'shotgun pickup failed').toContain('shotgun');
