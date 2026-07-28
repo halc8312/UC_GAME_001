@@ -1,0 +1,26 @@
+{
+  "name": "uc-game-001",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Operation Undercurrent — a browser FPS vertical slice built on Three.js",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "verify": "npm run test && npm run build && npm run test:e2e",
+    "capture": "node tools/capture.mjs",
+    "profile": "node tools/profile.mjs"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  }
+}
