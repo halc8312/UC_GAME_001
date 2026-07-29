@@ -20,50 +20,50 @@
       "phase": "alarm"
     },
     {
-      "at": 59.07,
+      "at": 9.87,
       "event": "objective_4_done",
       "phase": "extraction",
-      "deaths": 0
+      "deaths": 1
     },
     {
-      "at": 103.88,
+      "at": 45.17,
       "event": "mission_complete",
       "result": {
         "success": true,
-        "timeSeconds": 103.7,
-        "shotsFired": 16,
-        "shotsHit": 11,
-        "accuracy": 68.8,
-        "kills": 2,
+        "timeSeconds": 45,
+        "shotsFired": 148,
+        "shotsHit": 31,
+        "accuracy": 20.9,
+        "kills": 5,
         "headshots": 0,
-        "damageTaken": 137,
-        "deaths": 0,
+        "damageTaken": 304,
+        "deaths": 2,
         "objectivesCompleted": 5,
         "objectivesTotal": 5,
-        "score": 70.2,
-        "grade": "A"
+        "score": 52,
+        "grade": "C"
       },
-      "deaths": 0
+      "deaths": 2
     }
   ],
   "result": {
     "success": true,
-    "timeSeconds": 103.7,
-    "shotsFired": 16,
-    "shotsHit": 11,
-    "accuracy": 68.8,
-    "kills": 2,
+    "timeSeconds": 45,
+    "shotsFired": 148,
+    "shotsHit": 31,
+    "accuracy": 20.9,
+    "kills": 5,
     "headshots": 0,
-    "damageTaken": 137,
-    "deaths": 0,
+    "damageTaken": 304,
+    "deaths": 2,
     "objectivesCompleted": 5,
     "objectivesTotal": 5,
-    "score": 70.2,
-    "grade": "A"
+    "score": 52,
+    "grade": "C"
   },
-  "deathsDuringRun": 0,
+  "deathsDuringRun": 2,
   "playedWithoutDebugKills": true,
-  "audioEventCount": 446,
+  "audioEventCount": 1445,
   "distinctSounds": [
     "alarm_siren",
     "ambient_hum",
@@ -84,11 +84,15 @@
     "interact_complete",
     "interact_start",
     "land",
+    "mission_fail",
     "mission_success",
     "objective_complete",
+    "player_death",
     "player_hurt",
     "powerdown",
     "rifle_fire",
+    "rifle_reload_end",
+    "rifle_reload_start",
     "ui_click",
     "ui_hover",
     "weapon_switch"

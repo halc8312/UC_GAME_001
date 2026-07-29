@@ -55,11 +55,11 @@ npm run rubric           # scores the rubric against what is on disk
 $ npm run record:build
 build ok: true
 vulnerabilities: 0
-app gzip: 70.1 kB (three: 180 kB, total 250.1 kB)
+app gzip: 70.7 kB (three: 180 kB, total 250.7 kB)
 asset files checked in: 0
 ```
 
-The app bundle is 70.1 kB gzipped against a 220 kB budget. Three.js is 180 kB on top
+The app bundle is 70.7 kB gzipped against a 220 kB budget. Three.js is 180 kB on top
 of that and is excluded by the budget's own terms. `asset files checked in: 0` is a
 scan of the whole working tree for `.png/.jpg/.mp3/.ogg/.wav/.glb/.gltf/.fbx` — the
 "no authored assets" claim is enforced, not asserted.
@@ -69,13 +69,13 @@ scan of the whole working tree for `.png/.jpg/.mp3/.ogg/.wav/.glb/.gltf/.fbx` �
 ```
 $ npm run test
 Test Files  10 passed (10)
-     Tests  732 passed (732)
+     Tests  735 passed (735)
 ```
 
-`artifacts/logs/unit-tests.json`: `numPassedTests 732 · numTotalTests 732 ·
+`artifacts/logs/unit-tests.json`: `numPassedTests 735 · numTotalTests 735 ·
 numFailedTests 0 · success true`.
 
-732 tests across `core`, `collision`, `combat`, `ballistics`, `level`, `mission`,
+735 tests across `core`, `collision`, `combat`, `ballistics`, `level`, `mission`,
 `ai`, `audio`, `textures` and `hygiene`. The hygiene suite is the one that matters
 for the rubric's determinism and leak criteria: it fails the build on any
 `Math.random()` under `src/core/**` or `src/game/**`, and on any GPU-resource owner
@@ -85,7 +85,7 @@ that does not expose `dispose()`.
 
 ```
 $ cat artifacts/logs/e2e-console.json
-{ "bootMs": 4591, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
+{ "bootMs": 3827, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
   ReadPixels" ], "failedRequests": [], "externalRequests": [], "runtimeErrors": [] }
 ```
 
@@ -99,31 +99,32 @@ produced by the game.
 ```
 $ npm run test:e2e
 Running 17 tests using 1 worker
-  ✓   1 boots clean with no console errors and no external requests (15.5s)
-  ✓   2 reaches interactive quickly (9.3s)
-  ✓   3 menu, briefing and deploy form a path into the mission (50.6s)
-  ✓   4 the controls screen documents every bound key (20.7s)
-  ✓   5 movement obeys the spec speeds and gravity (70.9s)
-  ✓   6 mouselook clamps pitch and leaves yaw free (74.5s)
-  ✓   7 the player never leaves the world when walking the whole route (2.9m)
-  ✓   8 both weapons fire, reload, run dry and switch (99.6s)
-  ✓   9 aiming down sights tightens spread and slows the player (29.5s)
-  ✓  10 enemies perceive, path, fight and die — the FSM traverses every state (4.5m)
-  ✓  11 enemies damage the player and the player can die and retry (31.2s)
-  ✓  12 pause suspends the simulation and resumes cleanly (1.3m)
-  ✓  13 settings change behaviour and survive a reload (45.6s)
-  ✓  14 the full mission is playable from the menu to the results screen (6.1m)
-  ✓  15 the HUD is readable at 1280x720 and 1920x1080 without overlap (2.4m)
-  ✓  16 reduced-flash mode suppresses the alarm strobe and screen shake (1.2m)
-  ✓  17 a seeded run is reproducible (36.3s)
+  ✓   1 boots clean with no console errors and no external requests (7.2s)
+  ✓   2 reaches interactive quickly (4.1s)
+  ✓   3 menu, briefing and deploy form a path into the mission (38.0s)
+  ✓   4 the controls screen documents every bound key (17.0s)
+  ✓   5 movement obeys the spec speeds and gravity (56.4s)
+  ✓   6 mouselook clamps pitch and leaves yaw free (58.6s)
+  ✓   7 the player never leaves the world when walking the whole route (2.5m)
+  ✓   8 both weapons fire, reload, run dry and switch (81.9s)
+  ✓   9 aiming down sights tightens spread and slows the player (24.2s)
+  ✓  10 enemies perceive, path, fight and die — the FSM traverses every state (3.8m)
+  ✓  11 enemies damage the player and the player can die and retry (25.9s)
+  ✓  12 pause suspends the simulation and resumes cleanly (63.8s)
+  ✓  13 settings change behaviour and survive a reload (34.3s)
+  ✓  14 the full mission is playable from the menu to the results screen (5.9m)
+  ✓  15 the HUD is readable at 1280x720 and 1920x1080 without overlap (1.9m)
+  ✓  16 reduced-flash mode suppresses the alarm strobe and screen shake (59.9s)
+  ✓  17 a seeded run is reproducible (33.2s)
 
-  17 passed (26.5m)
+  17 passed (22.2m)
 ```
 
 `artifacts/logs/e2e-results.json` records `expected 17 · unexpected 0 · skipped 0 ·
-flaky 0`. Twenty-six minutes for seventeen tests is a software-rasteriser cost, not a
+flaky 0`. Twenty-two minutes for seventeen tests is a software-rasteriser cost, not a
 hang: tests 7, 10 and 14 walk and fight through the real level a browser round-trip
-at a time.
+at a time. (The suite ran 26.5 m before the draw-call work in §5.9 and 22.2 m after
+it — the same 17 tests, four minutes cheaper.)
 
 ### 3.5 The playthrough itself
 
@@ -132,19 +133,24 @@ simulation reported, not what the harness hoped for
 (`artifacts/logs/e2e-playthrough.json`):
 
 ```json
-{ "success": true, "timeSeconds": 103.7, "shotsFired": 16, "shotsHit": 11,
-  "accuracy": 68.8, "kills": 2, "headshots": 0, "damageTaken": 137, "deaths": 0,
-  "objectivesCompleted": 5, "objectivesTotal": 5, "score": 70.2, "grade": "A" }
+{ "success": true, "timeSeconds": 45, "shotsFired": 148, "shotsHit": 31,
+  "accuracy": 20.9, "kills": 5, "headshots": 0, "damageTaken": 304, "deaths": 2,
+  "objectivesCompleted": 5, "objectivesTotal": 5, "score": 52, "grade": "C" }
 ```
 
 Every row on the results screen is asserted against `__UC.state().result`, so the
-screen cannot drift from the tally. Timeline: deploy → objective 1 at 4.5 s →
-objective 2 at 7.3 s → objective 3 and the alarm at 14.0 s → helipad at 59.1 s →
-extraction complete at 103.9 s, no deaths. 446 audio events fired across 27 distinct
-sounds — `rifle_fire`, `enemy_fire`, `impact_flesh`, `hitmarker`, `footstep_grate`,
-`alarm_siren`, `breaker_pull`, `objective_complete`, `mission_success` among them.
-See §9 for what this run does *not* do: it teleports between the first three beat
-anchors, which is why the shot and kill counts are so low.
+screen cannot drift from the tally. 1,445 audio events fired across 31 distinct
+sounds — `rifle_fire`, `shotgun_fire`, `enemy_fire`, `impact_flesh`, `hitmarker`,
+`footstep_grate`, `alarm_siren`, `breaker_pull`, `objective_complete`,
+`mission_success` among them. Two deaths on the extraction hold, both retried from
+the checkpoint, then a clean finish.
+
+The run is not deterministic between sessions — the harness plays live against a
+seeded but reactive simulation — and the tally moves accordingly. An earlier run of
+the same test finished in 103.7 s with 16 shots, 2 kills, 0 deaths and grade A; this
+one took 148 shots and died twice. Both are recorded rather than the flattering one
+being kept. See §9 for what the test does *not* do: it teleports between the first
+three beat anchors.
 
 The AI trace from test 10 (`artifacts/logs/e2e-ai-trace.json`) shows the full FSM
 cycle on real contractors:
@@ -155,6 +161,59 @@ enemy_1: idle →(spawned_patrol) patrol →(noticed) suspicious →(acquired) c
          →(lost_target) search →(killed) dead
 ```
 
+### 3.6 Performance
+
+```
+$ npm run profile
+renderer: ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)), SwiftShader driver)
+
+scene                      draws   tris    step ms  step p95  sim/frame ms
+dock_approach                182   54082     0.194      0.60         0.971
+pump_hall_firefight          180   51730     0.728      1.40         3.640
+server_room                  144   48306     0.400      0.52         2.000
+extraction_hold_heaviest     128   47754     0.422      1.06         2.108
+
+frame-time distribution (54 frames, heaviest scene):
+  p50 3877.3 ms   p95 5001.6 ms   p99 5177.1 ms   max 5177.1 ms   0.28 fps
+
+soak: 180 s of simulated combat, rendered throughout
+  heap 18.1 -> 17.9 MB, peak 20.9 MB, trend +0.004 MB/min
+  live geometries 63 -> 63, textures 43 -> 43
+  0 console errors, 0 page errors, 0 failed requests
+
+--- budgets ---
+drawCalls: 182 / 260   -> PASS
+triangles: 54082 / 400000 -> PASS
+simMsMean: 0.728 / 4   -> PASS
+heapMB:    20.9 / 220  -> PASS
+```
+
+Read `frameMs` and `fps` as a property of SwiftShader, not of the game. A
+1280×720 frame here is shaded entirely on four vCPUs — PBR, a PMREM environment
+map, shadow maps, fog and ACES tone mapping — and takes about 3.9 seconds. The
+budgets that mean something on real hardware are the four above, and they are all
+hardware-independent.
+
+**Three of these numbers were wrong until this session, and every error
+flattered the result.** The instrumentation is described in §5.8; what it exposed
+once fixed is described in §5.9. Briefly: draw calls and triangles were reporting
+the viewmodel pass alone (a constant 24 and 476), `simMs` was a biased sample of
+whichever fixed step ended the frame, and `frameMs` was the simulation's *clamped*
+delta, so every percentile in the old report read as exactly the 250 ms clamp
+ceiling. With the counters repaired, the dock approach measured **552 draw calls
+against a 260 budget** — a budget that, on the evidence, had never actually been
+checked.
+
+Two measurement artefacts are visible in `performance.json` and are not defects:
+
+- `soak.poolStarvation: 288` against `poolStarvationInRealtimeScenes: [0,0,0,0]`.
+  Transient effects are aged on the render path, and the soak drives the
+  simulation with `step()`, so a simulated second's worth of decals, sparks and
+  tracers spawns between two rendered frames. Where steps and renders advance
+  together — every real-time scene window, and all play — the pools never starve.
+- `audioDropped` climbing while `activeVoices` sits at the 24-voice cap, for the
+  same reason: voices are reaped against the real `AudioContext` clock.
+
 ---
 
 ## 4. Artifact index
@@ -163,7 +222,7 @@ Every path below exists in the repository.
 
 | Evidence | Path |
 |---|---|
-| Beat screenshots (25) | `artifacts/screenshots/beat-01-*.png` … `beat-22-*.png` |
+| Beat screenshots (25) | `artifacts/screenshots/beat-01-*.png` … `beat-22-*.png` (41 PNGs in the directory in total) |
 | HUD at both resolutions | `artifacts/screenshots/hud-1280x720.png`, `hud-1920x1080.png` |
 | Reduced-flash comparison | `artifacts/screenshots/beat-22-alarm-{normal,reduced-flash,no-screen-effects}.png` |
 | Accessibility pair from e2e | `artifacts/screenshots/access-alarm-{normal,reduced}.png` |
@@ -176,7 +235,7 @@ Every path below exists in the repository.
 | Playthrough tally + audio log | `artifacts/logs/e2e-playthrough.json` |
 | AI state trace | `artifacts/logs/e2e-ai-trace.json` |
 | Capture run log | `artifacts/logs/capture-beat.json` |
-| Performance + soak | `artifacts/perf/performance.json` |
+| Performance, frame-time distribution + soak | `artifacts/perf/performance.json` |
 | Visual review passes | `artifacts/reviews/pass-{1,2,3}-visual-review.md` |
 
 ---
@@ -184,7 +243,7 @@ Every path below exists in the repository.
 ## 5. Redesigns
 
 The working rule was at most three local correction passes per area; past that, the
-subsystem gets rebuilt instead of tuned. Seven hit that line.
+subsystem gets rebuilt instead of tuned. Nine hit that line.
 
 ### 5.1 The first-person viewmodel
 
@@ -306,6 +365,73 @@ the second could be found only by chasing a waypoint number. Each is now a cabin
 with hazard bands, a physical lever, and a status light that swings and goes dark when
 pulled.
 
+### 5.8 The performance instrumentation
+
+Rebuilt because it was not measuring the game. Three independent faults, each
+of which made the numbers look better than they were:
+
+- **Draw calls and triangles described the viewmodel, not the frame.** A frame
+  is two `render()` calls — world, then the first-person overlay — and three
+  clears `info.render` at the top of each one, so a counter read after the frame
+  reports the second pass alone. Every perf run this project had ever done
+  reported a flat 24 draw calls and 476 triangles regardless of what was on
+  screen. The frame now owns `info.reset()` and `autoReset` is off.
+- **`simMs` sampled whichever fixed step happened to end the frame.** Step cost
+  varies by an order of magnitude within a frame, so that is a biased estimator;
+  it read 0.64 ms while the frame's five steps actually totalled 11.9 ms. It is
+  now the per-step mean, with the frame total carried separately as
+  `simFrameMs`. Both are reported, because at 60 fps a frame is one step and the
+  two coincide, while under a software rasteriser a frame absorbs five catch-up
+  steps and quoting either as the other misreports in one direction or the other.
+- **`frameMs` was the simulation's clamped delta.** The loop clamps `dt` to
+  250 ms so an alt-tab cannot inject a huge step, and instrumentation was reading
+  the clamped value — so under SwiftShader, where every frame exceeds the
+  ceiling, p50, p95, p99 and max all came out as exactly 250 ms. A distribution
+  where every percentile is identical is not a distribution. The clamp still
+  guards the simulation; metrics read the raw delta, and the honest frame time
+  turned out to be 3.9 s, not 250 ms.
+
+The profiler had the same disease at a larger scale. Its "3-minute combat soak"
+advanced **0.8 seconds of mission time** in 180 seconds of wall clock, because
+the loop caps catch-up at five steps — it was soaking the rasteriser and proving
+nothing about the simulation, which is where a leak would actually live. It now
+drives the simulation explicitly. It also fired on a fixed heading for three
+minutes and killed nothing, so it now re-aims at the nearest contractor every
+simulated second. And the frame-time percentiles were computed from five to
+eleven samples; a dedicated window now collects 54, and `verify-rubric` fails F3
+below 30.
+
+### 5.9 Draw-call budget — 552 against a budget of 260
+
+The first honest measurement failed F2 outright. Two causes, found by rendering
+the scene twice per probe with shadows toggled:
+
+- **252 static detail props were one `Mesh` each**, carrying 10,944 triangles
+  between them — 43 triangles per draw call. Lamp housings, masts, mounting
+  plates, hazard stripes, breaker cabinets, chevrons. `_buildStatic` had merged
+  the level shell by material since the first build; the treatment had simply
+  never been extended to the props. Merging them took the dock approach from 552
+  to 340.
+- **Four shadow-casting `PointLight`s cost 249 of the remaining calls.** A
+  shadow-casting point light renders the scene into a *cube* map — six passes —
+  and measured about 73 draw calls each. Three of them were paying that for very
+  little: the dock, apron and helipad are exteriors already grounded by the
+  directional light, which casts across all three for 18 calls total. One
+  survives, in the pump hall, where the mission's main interior firefight happens
+  and there is no sun to fall back on.
+
+A third change was tried, measured and reverted rather than kept on intuition.
+Merging globally gives each mesh a bounding sphere spanning the level, so it is
+inside every frustum there is and never culls — which looks like exactly the
+thing to fix. Splitting the merge into 20 m cells did tighten the bounds, and it
+made things **worse**: the pump hall went 226 → 374, because the extra meshes
+cost more in the six shadow-cube faces than the culling saved. Triangles are the
+abundant resource here (54 k against a 400 k budget) and draw calls are the
+scarce one, so the geometry stays in as few meshes as possible. The reasoning is
+recorded in `levelbuild.js` so the next person does not re-run the experiment.
+
+Final: 182 draw calls, 54,082 triangles, both inside budget with margin.
+
 ---
 
 ## 6. Defects the verification harness caught
@@ -418,10 +544,19 @@ Stated plainly, not buried.
   the vignette and the hurt flash — cost nothing as composited DOM layers. The spec
   was amended to describe what ships (§7).
 - **GPU timings here are not GPU timings.** Headless Chromium renders through
-  SwiftShader, a software rasteriser. `renderMs` and `fps` in
-  `artifacts/perf/performance.json` are a pessimistic lower bound and must not be read
-  as hardware performance. The binding budgets are the hardware-independent ones: CPU
-  simulation time, draw calls, triangle count and heap.
+  SwiftShader, a software rasteriser, on four vCPUs. A 1280×720 frame takes about
+  3.9 seconds — 0.28 fps. That number describes the rasteriser, not the game, and
+  must not be read as hardware performance. The binding budgets are the
+  hardware-independent ones: CPU simulation time (0.73 ms per 60 Hz step), draw
+  calls (182), triangle count (54 k) and heap (20.9 MB peak). **The slice has never
+  been run on a GPU, so no real frame rate is claimed anywhere in this report.**
+- **One shadow-casting point light, not four.** Three were cut to get inside the
+  draw-call budget (§5.9). The dock, apron and helipad rely on the directional
+  light for contact shadows; the server room has none at all and reads off its
+  emissive rack strips and the data core's own pool. `beat-05-apron-contact.png`
+  and `beat-09-server-room.png` are the after shots. On hardware where six extra
+  cube-map passes are affordable, restoring them is one `shadow: true` per entry
+  in `LIGHTS`.
 - **The capture harness's results screenshot is not a skilled playthrough.**
   `beat-21-results.png` reaches the results screen by surviving the extraction hold
   with `killAllEnemies()` between waves, so its accuracy and kill tallies are zero and
@@ -455,7 +590,86 @@ Stated plainly, not buried.
 
 ---
 
-## 10. How to run it
+## 10. Rubric scorecard
+
+`npm run rubric` reads only what is on disk in `artifacts/` and reports, per
+criterion, whether the evidence exists and what it says. It infers nothing from
+intent: a criterion whose artifact is missing reports `NO EVIDENCE`, and the script
+exits non-zero on any `FAIL` or `NO EVIDENCE`. It is deliberately hostile to its own
+author — `A5` rejects a Playwright report whose specs are all skipped (a skipped spec
+has `ok: true`), and `F3` rejects a percentile quoted from fewer than 30 frames.
+
+```
+$ npm run rubric
+PASS 52 · FAIL 0 · NO EVIDENCE 0 (of 52)
+```
+
+| # | Criterion | Status | Measured |
+|---|---|---|---|
+| A1 | `npm install` clean | **PASS** | 0 vulnerabilities |
+| A2 | production build succeeds | **PASS** | 5 files emitted to `dist/` |
+| A3 | app bundle gzip ≤ 220 kB (excl. three) | **PASS** | 70.7 kB |
+| A4 | unit suite green, ≥ 90 tests | **PASS** | 735/735 |
+| A5 | e2e suite green | **PASS** | 17 passed, 0 failed, 0 skipped |
+| A6 | zero uncaught console errors | **PASS** | 0 console, 0 runtime |
+| A7 | zero failed / external requests | **PASS** | 0 failed, 0 external |
+| A8 | no `Math.random()` in simulation code | **PASS** | enforced by `hygiene.test.js` |
+| A9 | every GPU resource owner disposes | **PASS** | enforced by `hygiene.test.js` |
+| B1 | mouselook, clamped pitch, persisted sensitivity | **PASS** | e2e |
+| B2 | movement speeds within 5% of spec | **PASS** | e2e + unit |
+| B3 | player never leaves the level | **PASS** | e2e route walk + level sweep |
+| B4 | step-up and slope limit | **PASS** | `collision.test.js` |
+| B5 | both weapons fire, reload, ADS, switch, run dry | **PASS** | e2e |
+| B6 | ballistics: falloff, spread, recoil | **PASS** | `ballistics.test.js` |
+| B7 | hit registration and damage multipliers | **PASS** | `combat.test.js` |
+| B8 | FSM traverses all six states | **PASS** | idle, patrol, suspicious, combat, search, dead |
+| B9 | enemy pathing reaches the player | **PASS** | e2e + unit cross-level pathing |
+| B10 | cover, burst-fire, flinch, death feedback | **PASS** | `ai.test.js` + combat screenshots |
+| B11 | death, death screen, checkpoint retry | **PASS** | e2e |
+| B12 | 5 objectives complete, mission ends in Results | **PASS** | grade C, 5/5 objectives |
+| C1 | menu → briefing → mission → results | **PASS** | e2e + 3 screenshots |
+| C2 | pause suspends and resumes | **PASS** | e2e |
+| C3 | settings change behaviour and persist | **PASS** | e2e |
+| C4 | objective tracker states goal and distance | **PASS** | beat screenshots |
+| C5 | damage feedback: direction, vignette, audio, shake | **PASS** | `beat-16-low-health.png` |
+| C6 | results screen matches the simulation tally | **PASS** | every row asserted in e2e |
+| C7 | controls documented in-game and matching | **PASS** | e2e + `beat-19-controls.png` |
+| C8 | reduced-flash suppresses strobes and shake | **PASS** | e2e + `access-alarm-{normal,reduced}.png` |
+| D1 | every beat legible (≥ 9 shots) | **PASS** | 25 beat screenshots |
+| D2 | lighting reads as a coherent scene | **PASS** | 3 review passes over the beat set |
+| D3 | materials distinguishable by surface | **PASS** | `textures.test.js` distinctness |
+| D4 | viewmodel animated | **PASS** | `beat-15-ads.png`, `beat-14-shotgun.png` |
+| D5 | combat readable: flash, tracers, impacts, hitmarkers | **PASS** | `beat-14b-muzzle-flash.png`, firefight shots |
+| D6 | alarm visibly changes the facility | **PASS** | 7 alarm screenshots |
+| D7 | HUD readable at 720p and 1080p | **PASS** | e2e overlap assertions + both shots |
+| D8 | three visual-review passes, no blocker | **PASS** | `artifacts/reviews/pass-{1,2,3}` |
+| E1 | all audio categories fire in a real run | **PASS** | 1,445 events, 31 distinct sounds |
+| E2 | audio positional and attenuating | **PASS** | `audio.test.js` |
+| E3 | limiter prevents clipping | **PASS** | `audio.test.js` |
+| E4 | no audio file fetched at runtime | **PASS** | 0 external requests |
+| F1 | CPU sim ≤ 4.0 ms/frame, heaviest encounter | **PASS** | 0.728 ms per 60 Hz step |
+| F2 | draw calls ≤ 260, triangles ≤ 400 k | **PASS** | 182 draws, 54,082 tris |
+| F3 | frame-time p50/p95/p99 + software caveat | **PASS** | 54 frames: 3877 / 5002 / 5177 ms |
+| F4 | heap ≤ 220 MB after 3 min, not trending up | **PASS** | peak 20.9 MB, +0.004 MB/min |
+| F5 | 3-minute soak, no errors, no leak | **PASS** | 180 s simulated, geometries 63 → 63 |
+| F6 | playthrough completes unattended, no blocker | **PASS** | `success: true` |
+| G1 | report lists exact commands and results | **PASS** | this document |
+| G2 | every artifact referenced and present | **PASS** | §4 |
+| G3 | limitations stated plainly | **PASS** | §9 |
+| G4 | redesigns recorded | **PASS** | §5 |
+| G5 | README explains run, test, play | **PASS** | `README.md` |
+
+Two caveats on reading this table honestly. **D2 is not a machine judgement** — no
+script can look at a PNG and rule on whether the lighting coheres; the mechanical
+proxy is that the beat set exists and three independent review passes signed off on
+it, and the reviews themselves are the evidence. And **D1's count differs between
+the table and the script**: 25 beat PNGs exist, but `verify-rubric`'s `^beat-\d\d-`
+pattern does not match `beat-14b-muzzle-flash.png`, so it reports 24. Both numbers
+are right; neither is near the threshold of 9.
+
+---
+
+## 11. How to run it
 
 ```bash
 npm install
