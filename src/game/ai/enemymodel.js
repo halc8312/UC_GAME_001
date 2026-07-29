@@ -30,6 +30,21 @@ export class EnemyModel {
     const visorMat = own('enemy_visor');
     const gunMat = own('weapon_body');
     const accentMat = own('enemy_accent');
+    // Inverted-hull silhouette. A contractor's base colour can always be matched
+    // by some part of the environment — tan decking, red alarm wash — so the
+    // threat read cannot depend on body colour alone. A back-face shell renders a
+    // bright edge around the figure from every angle, occludes correctly against
+    // geometry, and costs two draw calls per enemy.
+    const outlineMat = new THREE.MeshBasicMaterial({
+      color: 0x9ff8ff,
+      side: THREE.BackSide,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    this._ownMaterials.push(outlineMat);
+    this._outlineMat = outlineMat;
     this._bodyMat = body;
     this._baseEmissive = body.emissive ? body.emissive.clone() : null;
     this._accentMat = accentMat;
@@ -61,6 +76,11 @@ export class EnemyModel {
     this.arms.position.set(0.02, 1.3, -0.3);
     this.arms.castShadow = true;
 
+    this.outlineTorso = new THREE.Mesh(g.torso, outlineMat);
+    this.outlineTorso.scale.set(1.22, 1.1, 1.35);
+    this.outlineHead = new THREE.Mesh(g.head, outlineMat);
+    this.outlineHead.scale.setScalar(1.3);
+
     // Chest and shoulder markings in a hue used nowhere else in the palette.
     // Body value alone is not enough: a dark contractor against a dark catwalk is
     // invisible, and against a lamp-lit beige wall the silhouette washes out. A
@@ -75,6 +95,7 @@ export class EnemyModel {
     this.group.add(
       this.torso, this.head, this.visor, this.legL, this.legR, this.arms,
       this.chestBand, this.shoulderL, this.shoulderR,
+      this.outlineTorso, this.outlineHead,
     );
 
     this.walkPhase = 0;
@@ -102,8 +123,8 @@ export class EnemyModel {
       visor: new THREE.BoxGeometry(0.19, 0.075, 0.02),
       leg: new THREE.BoxGeometry(0.17, 0.92, 0.19),
       arms: new THREE.BoxGeometry(0.42, 0.16, 0.62),
-      band: new THREE.BoxGeometry(0.30, 0.055, 0.02),
-      pip: new THREE.BoxGeometry(0.075, 0.05, 0.16),
+      band: new THREE.BoxGeometry(0.34, 0.10, 0.02),
+      pip: new THREE.BoxGeometry(0.10, 0.06, 0.19),
     };
     EnemyModel._geoCache = cache;
     return cache;
@@ -142,8 +163,12 @@ export class EnemyModel {
       this.chestBand.position.y = 1.36 * sag;
       this.shoulderL.position.y = 1.5 * sag;
       this.shoulderR.position.y = 1.5 * sag;
-      // Markings go dark on death so a corpse stops reading as a live threat.
+      this.outlineTorso.position.y = this.torso.position.y;
+      this.outlineHead.position.y = this.head.position.y;
+      // Markings and silhouette go dark on death so a corpse stops reading as a
+      // live threat while it fades.
       this._accentMat.emissiveIntensity = 0.25;
+      this._outlineMat.opacity = 0.06;
       this.legL.rotation.x = -0.35 * ease;
       this.legR.rotation.x = -0.2 * ease;
       this.arms.rotation.x = 0.9 * ease;
@@ -169,6 +194,8 @@ export class EnemyModel {
     this.chestBand.position.y = 1.36 * squash + bounce;
     this.shoulderL.position.y = 1.5 * squash + bounce;
     this.shoulderR.position.y = 1.5 * squash + bounce;
+    this.outlineTorso.position.y = this.torso.position.y;
+    this.outlineHead.position.y = this.head.position.y;
     this.legL.position.y = 0.46 * squash;
     this.legR.position.y = 0.46 * squash;
 
@@ -199,6 +226,7 @@ export class EnemyModel {
 
   reset() {
     this._accentMat.emissiveIntensity = 2.8;
+    this._outlineMat.opacity = 0.55;
     this.deathT = 0;
     this.aimBlend = 0;
     this.walkPhase = 0;
@@ -212,7 +240,9 @@ export class EnemyModel {
   }
 
   setOpacity(o) {
-    for (const m of this._ownMaterials) m.opacity = o;
+    for (const m of this._ownMaterials) {
+      m.opacity = m === this._outlineMat ? Math.min(m.opacity, o) : o;
+    }
     this.group.visible = o > 0.02;
   }
 

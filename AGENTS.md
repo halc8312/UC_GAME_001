@@ -125,4 +125,7 @@ npm run test:e2e       # Playwright: boot, playthrough, captures
 npm run capture        # screenshot set into artifacts/screenshots/
 npm run profile        # performance + memory run into artifacts/perf/
 npm run verify         # test + build + e2e, the gate for "done"
+npm run rubric         # score QUALITY_RUBRIC.md against artifacts/ on disk
+npm run record:build   # install/build facts into artifacts/logs/build.json
+npm run evidence       # record:build + test + e2e + capture + profile + rubric
 ```

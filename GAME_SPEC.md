@@ -153,9 +153,20 @@ a limiter on the master bus.
 ### 4.7 Rendering
 Procedural PBR-ish materials with generated noise/normal maps (concrete, steel, rust,
 grating, glass, water), baked-feel lighting via a sky hemisphere + directional sun with
-cascaded-feel shadow map, sodium lamp point lights with cheap volumetric-cone meshes,
-sea fog, animated water plane, emissive alarm strobes, and a post chain (bloom,
-vignette, film grain, chromatic aberration on damage, hurt flash).
+a shadow map, a PMREM environment map prefiltered from the sky dome (without it every
+metal surface renders black), sodium lamp point lights with modelled fixtures — housing,
+bulb, and either a ceiling stem or a deck-mounted mast outdoors — exponential sea fog,
+an animated water plane, and emissive alarm strobes.
+
+**Amended during M5.** The original text specified a post chain of bloom, film grain and
+chromatic-aberration-on-damage on top of the vignette and hurt flash. That was dropped
+deliberately, not skipped: an `EffectComposer` pass costs a full-screen read/write per
+effect, which is the single most expensive thing available on a software rasteriser, and
+the two effects that actually carry information — the vignette and the hurt flash — cost
+nothing as composited DOM layers. What ships is a CSS overlay stack (base vignette,
+graded low-health vignette with a canvas `saturate()` filter, alarm edge vignette, hurt
+flash) plus in-scene lighting changes for the alarm. Bloom, grain and chromatic
+aberration are not implemented and are listed as such in FINAL_REPORT § Limitations.
 
 ---
 

@@ -68,9 +68,14 @@ const shot = async (name) => {
 /**
  * Enter a beat from a checkpoint, pose the camera, then run a script of
  * (inputFrame, milliseconds) pairs through the real simulation.
+ *
+ * `hold` keeps an input frame installed through the screenshot. Without it the
+ * harness clears input before shooting, and any state driven by a held key —
+ * ADS above all — decays during the two settle frames, so the capture shows a
+ * hipfire pose while claiming to document aiming.
  */
-const beat = async ({ checkpoint = 0, at, look, script = [], seed = 1337 }) => {
-  await page.evaluate(([cp, at, look, script, seed]) => {
+const beat = async ({ checkpoint = 0, at, look, script = [], seed = 1337, hold = null }) => {
+  await page.evaluate(([cp, at, look, script, seed, hold]) => {
     const g = window.__UC;
     g.startMission(cp);
     g.seed(seed);
@@ -83,9 +88,56 @@ const beat = async ({ checkpoint = 0, at, look, script = [], seed = 1337 }) => {
       g.input(frame);
       g.step(ms);
     }
-    g.input({});
+    g.input(hold || {});
     g.step(60);
-  }, [checkpoint, at, look, script, seed]);
+  }, [checkpoint, at, look, script, seed, hold]);
+};
+
+/**
+ * Close with the nearest live contractor, aim at it and fire.
+ *
+ * Screenshots of a "firefight" with no enemy in frame prove nothing about combat
+ * readability, so the combat beats hunt for a target before shooting instead of
+ * spraying at a fixed heading.
+ */
+const engage = async ({ approachMs = 4000, fireMs = 700 } = {}) => {
+  let elapsed = 0;
+  while (elapsed < approachMs) {
+    const st = await page.evaluate(() => window.__UC.state());
+    const live = st.enemies.states.filter((e) => !e.dead);
+    if (!live.length) break;
+    live.sort((a, b) =>
+      Math.hypot(a.x - st.player.x, a.z - st.player.z) - Math.hypot(b.x - st.player.x, b.z - st.player.z));
+    const t = live[0];
+    const dist = Math.hypot(t.x - st.player.x, t.z - st.player.z);
+    const yaw = Math.atan2(-(t.x - st.player.x), -(t.z - st.player.z));
+    const pitch = Math.atan2((t.y + 1.2) - (st.player.y + 1.62), Math.max(1, dist));
+    await page.evaluate(([y, p]) => window.__UC.look(y, p), [yaw, pitch]);
+    if (t.visible && dist < 22) {
+      // Fire, then advance only a couple of frames before returning, so the
+      // muzzle flash, tracer and impact are still alive when the screenshot is
+      // taken. Burning the whole burst first produced "firefight" captures with
+      // no combat feedback anywhere in frame.
+      await page.evaluate((ms) => {
+        window.__UC.input({ fire: true, aim: true });
+        window.__UC.step(ms);
+        window.__UC.step(24);
+      }, fireMs);
+      return true;
+    }
+    await page.evaluate(() => {
+      window.__UC.input({ moveZ: 1 });
+      window.__UC.step(300);
+    });
+    elapsed += 300;
+  }
+  // Nothing reachable: still fire so the muzzle flash and tracer are captured.
+  await page.evaluate((ms) => {
+    window.__UC.input({ fire: true });
+    window.__UC.step(ms);
+    window.__UC.step(24);
+  }, fireMs);
+  return false;
 };
 
 const S = Math.PI;      // south (+Z)
@@ -112,10 +164,8 @@ await beat({ checkpoint: 0, look: [N, -0.02], script: [[{ moveZ: 1 }, 2400]] });
 await shot('04-dock-advance');
 
 // --- 05 apron, first contact ------------------------------------------------
-await beat({
-  checkpoint: 0, at: [1.5, 0.1, 36], look: [-0.35, -0.02],
-  script: [[{ moveZ: 1 }, 700], [{ fire: true }, 420]],
-});
+await beat({ checkpoint: 0, at: [1.5, 0.1, 36], look: [-0.35, -0.02] });
+await engage({ approachMs: 6000, fireMs: 500 });
 await shot('05-apron-contact');
 
 // --- 06 pump hall -----------------------------------------------------------
@@ -123,21 +173,19 @@ await beat({ checkpoint: 1, at: [1, 0.1, 25], look: [0.12, -0.05], script: [[{ m
 await shot('06-pump-hall');
 
 // --- 07 pump hall firefight -------------------------------------------------
-await beat({
-  checkpoint: 1, at: [-1, 0.1, 20], look: [0.05, -0.02],
-  script: [[{ moveZ: 1 }, 1500], [{}, 700], [{ fire: true, aim: true }, 700]],
-});
+await beat({ checkpoint: 1, at: [-1, 0.1, 22], look: [0.05, -0.02], script: [[{}, 1200]] });
+await engage({ approachMs: 9000, fireMs: 800 });
 await shot('07-pump-hall-firefight');
 
 // --- 08 breaker interaction -------------------------------------------------
-await beat({ checkpoint: 1, at: [-18.2, 0.1, 12], look: [W, -0.06] });
+// Backed off from 1.2 m to 2.2 m: pressed against the wall, a single sodium lamp
+// blew the concrete out to a flat tan field that filled the frame.
+await beat({ checkpoint: 1, at: [-17.2, 0.1, 12.9], look: [W - 0.34, -0.05] });
 await shot('08-breaker-prompt');
 
 // --- 09 server room ---------------------------------------------------------
-await beat({
-  checkpoint: 2, at: [-1, 0.1, -19], look: [0.5, -0.04],
-  script: [[{ moveZ: 1 }, 1200], [{ fire: true }, 600]],
-});
+await beat({ checkpoint: 2, at: [-1, 0.1, -19], look: [0.5, -0.04], script: [[{}, 900]] });
+await engage({ approachMs: 9000, fireMs: 700 });
 await shot('09-server-room');
 
 // --- 10 data core -----------------------------------------------------------
@@ -152,30 +200,29 @@ await beat({ checkpoint: 3, at: [21.8, 6.5, -23], look: [E, -0.05], script: [[{}
 await shot('11-alarm-catwalk');
 
 // --- 12 catwalk battle ------------------------------------------------------
-await beat({
-  checkpoint: 3, at: [28, 6.5, -20], look: [S, -0.03],
-  script: [[{ moveZ: 1 }, 1100], [{ fire: true }, 700], [{ fire: true, aim: true }, 500]],
-});
+await beat({ checkpoint: 3, at: [28, 6.5, -20], look: [S, -0.03], script: [[{}, 600]] });
+await engage({ approachMs: 9000, fireMs: 800 });
 await shot('12-catwalk-battle');
 
 // --- 13 helipad extraction --------------------------------------------------
-await beat({
-  checkpoint: 4, at: [37, 6.5, 2], look: [-2.35, -0.06],
-  script: [[{}, 900], [{ fire: true }, 900]],
-});
+await beat({ checkpoint: 4, at: [37, 6.5, 2], look: [-2.35, -0.06], script: [[{}, 1200]] });
+await engage({ approachMs: 9000, fireMs: 900 });
 await shot('13-helipad-hold');
 
 // --- 14 shotgun -------------------------------------------------------------
-await beat({
-  checkpoint: 2, at: [-6, 0.1, -24], look: [W, -0.03],
-  script: [[{ slot: 1 }, 800], [{ fire: true }, 260], [{}, 140]],
-});
+await beat({ checkpoint: 2, at: [-6, 0.1, -24], look: [W, -0.03], script: [[{ slot: 1 }, 900]] });
+await engage({ approachMs: 7000, fireMs: 240 });
 await shot('14-shotgun');
+
+// --- 14b muzzle flash, tracer and impact, caught mid-burst -------------------
+await beat({ checkpoint: 1, at: [-1, 0.1, 20], look: [0.05, -0.02], script: [[{}, 900]] });
+await engage({ approachMs: 9000, fireMs: 120 });
+await shot('14b-muzzle-flash');
 
 // --- 15 aim down sights -----------------------------------------------------
 await beat({
   checkpoint: 1, at: [0, 0.1, 22], look: [0.05, -0.02],
-  script: [[{ aim: true }, 600]],
+  script: [[{ aim: true }, 600]], hold: { aim: true },
 });
 await shot('15-ads');
 
@@ -185,6 +232,7 @@ await page.evaluate(() => {
   window.__UC.hurt(74);
   window.__UC.step(180);
 });
+await sleep(700); // let the desaturation transition settle before the shot
 await shot('16-low-health');
 
 // --- 17 pause ---------------------------------------------------------------
@@ -236,9 +284,16 @@ console.log('mission completed by surviving the hold:', finished.finished, '| re
 // --- 22 reduced-flash accessibility comparison ------------------------------
 await beat({ checkpoint: 3, at: [28, 6.5, -14], look: [S, -0.04], script: [[{}, 600]] });
 await shot('22-alarm-normal');
-await page.evaluate(() => window.__UC.settings({ reducedFlash: true, screenEffects: false }));
+// Reduced flash on its own: strobes and the edge vignette hold steady instead of
+// pulsing. Screen effects stay on so the pair differs only in motion.
+await page.evaluate(() => window.__UC.settings({ reducedFlash: true }));
+await page.evaluate(() => window.__UC.step(300));
 await sleep(250);
 await shot('22-alarm-reduced-flash');
+await page.evaluate(() => window.__UC.settings({ reducedFlash: true, screenEffects: false }));
+await page.evaluate(() => window.__UC.step(300));
+await sleep(250);
+await shot('22-alarm-no-screen-effects');
 await page.evaluate(() => window.__UC.settings({ reducedFlash: false, screenEffects: true }));
 
 const report = {

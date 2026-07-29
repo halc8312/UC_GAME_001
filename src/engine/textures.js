@@ -1,4 +1,4 @@
-import { clamp, clamp01, lerp, smoothstep } from '../core/mathx.js';
+import { clamp01, lerp, smoothstep } from '../core/mathx.js';
 import { Rng } from '../core/rng.js';
 
 /**

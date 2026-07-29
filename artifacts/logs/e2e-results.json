@@ -1,0 +1,419 @@
+{
+  "config": {
+    "configFile": "/home/user/UC_GAME_001/playwright.config.js",
+    "rootDir": "/home/user/UC_GAME_001/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "artifacts/logs/e2e-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/user/UC_GAME_001/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "",
+        "name": "",
+        "testDir": "/home/user/UC_GAME_001/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run build && npm run preview",
+      "url": "http://127.0.0.1:4173",
+      "reuseExistingServer": true,
+      "timeout": 180000
+    }
+  },
+  "suites": [
+    {
+      "title": "playthrough.spec.js",
+      "file": "playthrough.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "boots clean with no console errors and no external requests",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-dd105d66b3035830072d",
+          "file": "playthrough.spec.js",
+          "line": 218,
+          "column": 1
+        },
+        {
+          "title": "reaches interactive quickly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-fbbf5bd43b1388faaa6a",
+          "file": "playthrough.spec.js",
+          "line": 239,
+          "column": 1
+        },
+        {
+          "title": "menu, briefing and deploy form a path into the mission",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-bb4a7c2f5809e3fa7693",
+          "file": "playthrough.spec.js",
+          "line": 245,
+          "column": 1
+        },
+        {
+          "title": "the controls screen documents every bound key",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-8c06af1f310ec201838a",
+          "file": "playthrough.spec.js",
+          "line": 261,
+          "column": 1
+        },
+        {
+          "title": "movement obeys the spec speeds and gravity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-a3f87e7207d4a46a4782",
+          "file": "playthrough.spec.js",
+          "line": 272,
+          "column": 1
+        },
+        {
+          "title": "mouselook clamps pitch and leaves yaw free",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-a428d330da684aa28e60",
+          "file": "playthrough.spec.js",
+          "line": 301,
+          "column": 1
+        },
+        {
+          "title": "the player never leaves the world when walking the whole route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-c4b34bbb0096d7034afe",
+          "file": "playthrough.spec.js",
+          "line": 312,
+          "column": 1
+        },
+        {
+          "title": "both weapons fire, reload, run dry and switch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-407c108ce50fd8addde6",
+          "file": "playthrough.spec.js",
+          "line": 327,
+          "column": 1
+        },
+        {
+          "title": "aiming down sights tightens spread and slows the player",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-b8406b180907e5a8f478",
+          "file": "playthrough.spec.js",
+          "line": 375,
+          "column": 1
+        },
+        {
+          "title": "enemies perceive, path, fight and die — the FSM traverses every state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-3a63ecbcf94a5ce97df0",
+          "file": "playthrough.spec.js",
+          "line": 391,
+          "column": 1
+        },
+        {
+          "title": "enemies damage the player and the player can die and retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-b058293b218b6ac7ad9f",
+          "file": "playthrough.spec.js",
+          "line": 458,
+          "column": 1
+        },
+        {
+          "title": "pause suspends the simulation and resumes cleanly",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-92e39c85a7df5e0f7a07",
+          "file": "playthrough.spec.js",
+          "line": 483,
+          "column": 1
+        },
+        {
+          "title": "settings change behaviour and survive a reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-3b0eb37ec7e7f17e2879",
+          "file": "playthrough.spec.js",
+          "line": 502,
+          "column": 1
+        },
+        {
+          "title": "the full mission is playable from the menu to the results screen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-d7429f60876d07a004cb",
+          "file": "playthrough.spec.js",
+          "line": 532,
+          "column": 1
+        },
+        {
+          "title": "the HUD is readable at 1280x720 and 1920x1080 without overlap",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-e515cc515dff1bf46a83",
+          "file": "playthrough.spec.js",
+          "line": 669,
+          "column": 1
+        },
+        {
+          "title": "reduced-flash mode suppresses the alarm strobe and screen shake",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-bbdd66603fa757f8026a",
+          "file": "playthrough.spec.js",
+          "line": 710,
+          "column": 1
+        },
+        {
+          "title": "a seeded run is reproducible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "01fd090c45aab873a932-6ec7e64a718ffc97c0e0",
+          "file": "playthrough.spec.js",
+          "line": 729,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-07-29T04:47:23.931Z",
+    "duration": 343.78599999999994,
+    "expected": 0,
+    "skipped": 17,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

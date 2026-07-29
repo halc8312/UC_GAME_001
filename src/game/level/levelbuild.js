@@ -3,6 +3,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { SURFACE, RAMP } from './collision.js';
 import { CATWALK_Y, LIGHTS, SEA_LEVEL } from './leveldata.js';
 
+/** Emergency lighting colour the sodium lamps swing to while the alarm runs. */
+const ALARM_LAMP_COLOR = new THREE.Color(0xff3b1c);
+
 const TILE = 2.4; // metres per texture tile — keeps texel density uniform
 
 /**
@@ -109,6 +112,7 @@ export class LevelBuilder {
     this._materials = [];
     this._lights = [];
     this.lampLights = new Map();
+    this.lampBulbs = [];
     this.strobeLights = new Map();
     this.emissiveStrips = [];
     this.stats = { merged: 0, meshes: 0, triangles: 0 };
@@ -361,18 +365,66 @@ export class LevelBuilder {
     this.dataCoreMesh.position.set(-10, 1.5, -30);
     this.root.add(this.dataCoreMesh);
     // A dedicated light so the objective prop is the brightest thing in the room.
-    const coreLight = new THREE.PointLight(0x53ffbe, 26, 9, 2);
+    // Local pool, not a room flood: mint is the HUD's own accent, and washing the
+    // whole server room in it left the colour unable to mean anything.
+    const coreLight = new THREE.PointLight(0x53ffbe, 13, 5.5, 2);
     coreLight.position.set(-10, 1.7, -30);
     this.root.add(coreLight);
     this._lights.push(coreLight);
 
-    // Breaker panels on the hall walls.
+    // Breaker cabinets on the hall walls.
+    //
+    // These carry a whole objective ("cut power to the security grid", 2 of 2)
+    // and until now they were a bare grey box against a grey wall — the only
+    // thing identifying one as a breaker was the interact prompt, so the second
+    // one could only be found by chasing a waypoint number. Each is now a
+    // recognisable object: hazard-striped cabinet, a physical lever, and a status
+    // light that goes dark when the breaker is pulled.
     const panelGeo = boxWithUV(0.5, 1.1, 0.9, 1.2);
-    this._geometries.push(panelGeo);
-    for (const [x, z] of [[-19.6, 12], [13.6, 16]]) {
-      const m = new THREE.Mesh(panelGeo, this.materials.get('steel'));
-      m.position.set(x, 1.5, z);
-      add(m);
+    const cabFrameGeo = new THREE.BoxGeometry(0.16, 1.24, 1.04);
+    const hazardGeo = new THREE.BoxGeometry(0.06, 0.16, 1.0);
+    const leverBaseGeo = new THREE.BoxGeometry(0.14, 0.22, 0.22);
+    const leverArmGeo = new THREE.CylinderGeometry(0.028, 0.028, 0.34, 6);
+    const leverKnobGeo = new THREE.SphereGeometry(0.055, 8, 6);
+    const statusGeo = new THREE.SphereGeometry(0.062, 8, 6);
+    this._geometries.push(
+      panelGeo, cabFrameGeo, hazardGeo, leverBaseGeo, leverArmGeo, leverKnobGeo, statusGeo,
+    );
+    this.breakerProps = new Map();
+    const breakers = [
+      ['breaker_w', -19.6, 12, 1],   // faces +X (east, into the hall)
+      ['breaker_e', 13.6, 16, -1],   // faces −X (west, into the hall)
+    ];
+    for (const [id, x, z, facing] of breakers) {
+      const g = new THREE.Group();
+      const frame = new THREE.Mesh(cabFrameGeo, this.materials.get('steel_dark'));
+      frame.position.set(x - facing * 0.04, 1.5, z);
+      frame.castShadow = true;
+      add(frame);
+      const door = new THREE.Mesh(panelGeo, this.materials.get('steel'));
+      door.position.set(x, 1.5, z);
+      add(door);
+      for (const dy of [0.56, -0.56]) {
+        const stripe = new THREE.Mesh(hazardGeo, this.materials.get('hazard'));
+        stripe.position.set(x + facing * 0.24, 1.5 + dy, z);
+        add(stripe);
+      }
+      const base = new THREE.Mesh(leverBaseGeo, this.materials.get('steel_dark'));
+      base.position.set(x + facing * 0.28, 1.35, z);
+      add(base);
+      // The lever itself stays dynamic so pulling it can animate.
+      const arm = new THREE.Mesh(leverArmGeo, this.materials.get('pipe'));
+      arm.position.set(x + facing * 0.30, 1.35, z);
+      arm.rotation.x = -0.5;
+      const knob = new THREE.Mesh(leverKnobGeo, this.materials.get('rubber'));
+      knob.position.set(x + facing * 0.30, 1.35, z);
+      const statusMat = this.materials.get('emissive_amber').clone();
+      this._materials.push(statusMat);
+      const status = new THREE.Mesh(statusGeo, statusMat);
+      status.position.set(x + facing * 0.26, 1.92, z);
+      g.add(arm, knob, status);
+      this.root.add(g);
+      this.breakerProps.set(id, { arm, knob, status, statusMat, x, z, facing });
     }
 
     // Sodium lamp fixtures. Each gets a stem and a mounting plate: a shade hovering
@@ -381,29 +433,63 @@ export class LevelBuilder {
     const bulbGeo = new THREE.SphereGeometry(0.22, 10, 8);
     const stemGeo = new THREE.CylinderGeometry(0.045, 0.045, 1, 6);
     const plateGeo = new THREE.BoxGeometry(0.34, 0.08, 0.34);
-    this._geometries.push(lampGeo, bulbGeo, stemGeo, plateGeo);
+    const mastGeo = new THREE.CylinderGeometry(0.075, 0.095, 1, 8);
+    const armGeo = new THREE.BoxGeometry(1, 0.075, 0.075);
+    this._geometries.push(lampGeo, bulbGeo, stemGeo, plateGeo, mastGeo, armGeo);
     for (const l of LIGHTS) {
       if (l.kind !== 'lamp') continue;
       const housing = new THREE.Mesh(lampGeo, this.materials.get('steel_dark'));
       housing.position.set(l.x, l.y + 0.22, l.z);
       housing.castShadow = true;
       add(housing);
-      const bulb = new THREE.Mesh(bulbGeo, this.materials.get('emissive_amber'));
+      // Each fixture gets its own bulb material instance so the alarm can drive
+      // the lamps to red individually without repainting every amber surface in
+      // the level.
+      const bulbMat = this.materials.get('emissive_amber').clone();
+      const bulb = new THREE.Mesh(bulbGeo, bulbMat);
       bulb.position.set(l.x, l.y, l.z);
-      add(bulb);
-      const stem = new THREE.Mesh(stemGeo, this.materials.get('pipe'));
-      stem.position.set(l.x, l.y + 0.39 + (l.stem ?? 0.5) / 2, l.z);
-      stem.scale.y = l.stem ?? 0.5;
-      add(stem);
-      const plate = new THREE.Mesh(plateGeo, this.materials.get('steel_dark'));
-      plate.position.set(l.x, l.y + 0.39 + (l.stem ?? 0.5), l.z);
-      add(plate);
+      this.root.add(bulb);
+      this._materials.push(bulbMat);
+      this.lampBulbs.push(bulbMat);
+
+      if (l.mast) {
+        // Outdoors there is no ceiling to hang from. A stem ending in a mounting
+        // plate in open sky is the single loudest "unfinished" tell there is, so
+        // exterior fixtures are pole-mounted: a mast up from the deck and a short
+        // arm out to the shade.
+        const [deckY, dx, dz] = l.mast;
+        const armLen = Math.hypot(dx, dz);
+        const poleTop = l.y + 0.62;
+        const poleH = Math.max(0.4, poleTop - deckY);
+        const pole = new THREE.Mesh(mastGeo, this.materials.get('pipe'));
+        pole.position.set(l.x + dx, deckY + poleH / 2, l.z + dz);
+        pole.scale.y = poleH;
+        add(pole);
+        const arm = new THREE.Mesh(armGeo, this.materials.get('pipe'));
+        arm.position.set(l.x + dx / 2, poleTop, l.z + dz / 2);
+        arm.scale.x = armLen;
+        arm.rotation.y = Math.atan2(dz, dx);
+        add(arm);
+        const drop = new THREE.Mesh(stemGeo, this.materials.get('pipe'));
+        drop.position.set(l.x, l.y + 0.39 + (poleTop - l.y - 0.39) / 2, l.z);
+        drop.scale.y = Math.max(0.08, poleTop - l.y - 0.39);
+        add(drop);
+      } else {
+        const stem = new THREE.Mesh(stemGeo, this.materials.get('pipe'));
+        stem.position.set(l.x, l.y + 0.39 + (l.stem ?? 0.5) / 2, l.z);
+        stem.scale.y = l.stem ?? 0.5;
+        add(stem);
+        const plate = new THREE.Mesh(plateGeo, this.materials.get('steel_dark'));
+        plate.position.set(l.x, l.y + 0.39 + (l.stem ?? 0.5), l.z);
+        add(plate);
+      }
     }
 
     // Alarm strobes: a small dome under a housing, not a bare floating sphere.
-    const strobeGeo = new THREE.SphereGeometry(0.11, 8, 6);
-    const strobeHousingGeo = new THREE.CylinderGeometry(0.14, 0.14, 0.09, 8);
-    this._geometries.push(strobeGeo, strobeHousingGeo);
+    const strobeGeo = new THREE.SphereGeometry(0.085, 8, 6);
+    const strobeHousingGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.075, 8);
+    const strobeMastGeo = new THREE.CylinderGeometry(0.05, 0.06, 1, 6);
+    this._geometries.push(strobeGeo, strobeHousingGeo, strobeMastGeo);
     for (const l of LIGHTS) {
       if (l.kind !== 'strobe') continue;
       const dome = new THREE.Mesh(strobeGeo, this.materials.get('emissive_red').clone());
@@ -416,6 +502,15 @@ export class LevelBuilder {
       const cap = new THREE.Mesh(strobeHousingGeo, this.materials.get('steel_dark'));
       cap.position.set(l.x, l.y + 0.1, l.z);
       add(cap);
+      if (l.mast) {
+        const [deckY] = l.mast;
+        const top = l.y + 0.14;
+        const h = Math.max(0.4, top - deckY);
+        const pole = new THREE.Mesh(strobeMastGeo, this.materials.get('pipe'));
+        pole.position.set(l.x, deckY + h / 2, l.z);
+        pole.scale.y = h;
+        add(pole);
+      }
     }
 
     // Hazard chevrons at the two doorways that matter for wayfinding.
@@ -459,15 +554,52 @@ export class LevelBuilder {
         light.material.emissiveIntensity = on ? 0.5 + pulse * 1.6 : 0.1;
         continue;
       }
-      light.intensity = on ? pulse * 110 : 0;
+      // Local pool, not a flood. At 110 with a 15 m radius these four lights
+      // repainted every surface in the second half of the game red, which is
+      // both ugly and indistinguishable from the low-health state.
+      light.intensity = on ? pulse * 30 : 0;
     }
+
+    // The alarm has to be legible in the *world*, not only in a screen overlay.
+    // An overlay wide enough to be noticed is also wide enough to swallow the
+    // contractors it is warning about, so the weight lives here instead: the
+    // sodium lamps swing to emergency red and drop a stop, which changes every
+    // surface in the room without costing a single pixel of enemy contrast.
+    const k = on ? (reducedFlash ? 0.8 : 0.66 + pulse * 0.34) : 0;
+    if (k !== this._lampAlarmK) {
+      this._lampAlarmK = k;
+      for (const [id, light] of this.lampLights) {
+        const base = LIGHTS.find((b) => b.id === id);
+        if (!base) continue;
+        light.color.setHex(base.color).lerp(ALARM_LAMP_COLOR, k * 0.85);
+        light.intensity = base.intensity * (1 - 0.42 * k) * (this._lampScale ?? 1);
+      }
+      for (const mat of this.lampBulbs) {
+        mat.emissive.setHex(0xffb15e).lerp(ALARM_LAMP_COLOR, k * 0.9);
+      }
+    }
+  }
+
+  /** Throw a breaker lever and kill its status light. */
+  setBreakerPulled(id) {
+    const b = this.breakerProps?.get(id);
+    if (!b || b.pulled) return;
+    b.pulled = true;
+    b.arm.rotation.x = 0.62;
+    b.arm.position.y = 1.28;
+    b.knob.position.y = 1.16;
+    b.knob.position.z = b.z + 0.13;
+    b.statusMat.emissive.setHex(0x140a04);
+    b.statusMat.emissiveIntensity = 0.25;
   }
 
   /** Lamp flicker during the power-down beat. */
   setLampScale(scale) {
+    this._lampScale = scale;
+    const k = this._lampAlarmK ?? 0;
     for (const [id, light] of this.lampLights) {
       const base = LIGHTS.find((l) => l.id === id);
-      if (base) light.intensity = base.intensity * scale;
+      if (base) light.intensity = base.intensity * (1 - 0.42 * k) * scale;
     }
   }
 
@@ -480,6 +612,12 @@ export class LevelBuilder {
     });
     for (const g of this._geometries) g.dispose?.();
     this._geometries.length = 0;
+    // Cloned materials (per-lamp bulbs, strobe domes, breaker status lights) are
+    // owned here rather than by the MaterialLibrary, so they have to be released
+    // here too.
+    for (const m of this._materials) m.dispose?.();
+    this._materials.length = 0;
+    this.lampBulbs.length = 0;
     this.scene.remove(this.root);
   }
 }

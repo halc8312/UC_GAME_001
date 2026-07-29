@@ -1,6 +1,6 @@
 import { clamp, clamp01, planarDist } from '../../core/mathx.js';
 import {
-  CHECKPOINTS, ENEMY_SPAWNS, INTERACTABLES, PICKUPS, PLAYER_SPAWN, WORLD_BOUNDS, zoneAt,
+  CHECKPOINTS, ENEMY_SPAWNS, INTERACTABLES, PICKUPS, WORLD_BOUNDS, zoneAt,
 } from '../level/leveldata.js';
 import { MISSION_OBJECTIVES, ObjectiveList } from './objectives.js';
 
@@ -128,7 +128,20 @@ export class MissionDirector {
     this.powerCut = this.checkpointIndex >= 2;
     this.setAlarm(this.checkpointIndex >= 3);
 
-    this.setPhase(cp.phase, true);
+    // The checkpoint's own beat still has to fire.
+    //
+    // Restoring the earlier objectives above already advanced `phase` all the way
+    // to the checkpoint's phase — with beat activation suppressed — so a plain
+    // `setPhase(cp.phase)` sees no change and returns early. The result was that
+    // every checkpoint restart dropped the player into an empty room: die in the
+    // pump hall, retry, and the pump hall has no contractors in it. Set the phase
+    // directly and activate the beat explicitly.
+    this.phase = cp.phase;
+    this.phaseTime = 0;
+    this._activateBeat(cp.phase);
+    // Respawn grace, applied after the beat has spawned so it covers the squad
+    // the player is about to land in front of.
+    this.ctx.enemies.setSpawnGrace?.(2.5);
     this.bus.emit('mission:started', { checkpoint: cp.id, index: this.checkpointIndex });
     return this;
   }

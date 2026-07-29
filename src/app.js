@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { EventBus } from './core/events.js';
 import { Input } from './core/input.js';
-import { FIXED_DT, Loop } from './core/loop.js';
+import { Loop } from './core/loop.js';
 import { Metrics } from './core/metrics.js';
-import { clamp, clamp01, damp, planarDist } from './core/mathx.js';
+import { clamp01, damp, planarDist } from './core/mathx.js';
 import { Rng, rng } from './core/rng.js';
 import { loadSettings, saveSettings } from './core/storage.js';
 
@@ -12,7 +12,7 @@ import { MaterialLibrary } from './engine/materials.js';
 import { TextureLibrary } from './engine/textures.js';
 
 import { CollisionWorld } from './game/level/collision.js';
-import { buildColliders, CATWALK_Y, NAV_EDGES, NAV_NODES, PLAYER_SPAWN } from './game/level/leveldata.js';
+import { buildColliders, NAV_EDGES, NAV_NODES, PLAYER_SPAWN } from './game/level/leveldata.js';
 import { LevelBuilder } from './game/level/levelbuild.js';
 import { NavGraph } from './game/ai/navgraph.js';
 import { EnemyManager } from './game/ai/enemies.js';
@@ -179,11 +179,15 @@ export class Game {
     this.vmRig = new THREE.Group();
     this.viewScene.add(this.vmRig);
 
-    const key = new THREE.DirectionalLight(0xd6e2f0, 2.1);
+    // The viewmodel is lit independently of the world so it stays readable in a
+    // pitch-black corridor and does not blow out under a sodium lamp.
+    const key = new THREE.DirectionalLight(0xd6e2f0, 3.0);
     key.position.set(-0.6, 1.0, 0.4);
-    const fill = new THREE.DirectionalLight(0xffb15e, 0.9);
+    const fill = new THREE.DirectionalLight(0xffb15e, 1.4);
     fill.position.set(0.8, -0.3, 0.6);
-    this.viewScene.add(key, fill, new THREE.AmbientLight(0x6d7f95, 0.9));
+    const rim = new THREE.DirectionalLight(0x9fc4ff, 1.6);
+    rim.position.set(0.2, 0.4, -1);
+    this.viewScene.add(key, fill, rim, new THREE.AmbientLight(0x7d8fa5, 1.2));
 
     this.viewmodel = new ViewModel(this.viewScene, this.materials);
     this.vmRig.add(this.viewmodel.root);
@@ -360,6 +364,9 @@ export class Game {
     b.on('interact:complete', (e) => {
       const t = e.target;
       if (t && t.sound) play(t.sound);
+      // The lever swings and its status light dies, so a pulled breaker is
+      // distinguishable from an unpulled one at a glance across the hall.
+      if (t && t.kind === 'lever') this.level.setBreakerPulled(t.id);
     });
     b.on('pickup:taken', (e) => {
       play('checkpoint', { volume: 0.5 });
@@ -535,6 +542,15 @@ export class Game {
     const t = this.time;
     this.materials.tick(frameDt);
 
+    // Age the transient effects *before* this frame's update spawns new ones.
+    //
+    // With this after `_updateCamera`, a muzzle flash was spawned with 55 ms of
+    // life and then immediately charged the whole frame's delta — so at any frame
+    // rate below ~18 fps the flash was dead before it was ever drawn, and firing
+    // produced no visible flash at all. Ageing first means anything spawned this
+    // frame is guaranteed to render at least once.
+    this.impacts.update(frameDt, this.camera);
+
     if (this._menuMode) {
       // Slow orbital drift keeps the menu backdrop alive without a whole camera rig.
       const k = performance.now() * 0.00006;
@@ -545,13 +561,14 @@ export class Game {
       this._updateCamera(frameDt);
       this._updateHud(frameDt);
       this.level.updateAlarm(t, this.director.alarm, this.settings.reducedFlash);
-      this.render3d.setAlarmLighting(
-        damp(this._alarmBlend ?? 0, this.director.alarm ? 1 : 0, 1.6, frameDt),
-      );
       this._alarmBlend = damp(this._alarmBlend ?? 0, this.director.alarm ? 1 : 0, 1.6, frameDt);
+      this.render3d.setAlarmLighting(this._alarmBlend);
+      this.hud.setAlarm(
+        this.director.alarm && this.settings.screenEffects !== false,
+        this.settings.reducedFlash,
+      );
     }
 
-    this.impacts.update(frameDt, this.camera);
     this.audio.update(frameDt);
     this.hud.tick(frameDt);
 

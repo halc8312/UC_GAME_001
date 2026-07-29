@@ -1,5 +1,18 @@
 import * as THREE from 'three';
 
+// Alarm blend targets, hoisted: setAlarmLighting runs every frame and must not
+// allocate five Colors per call.
+const FOG_CALM = new THREE.Color(0x4a5c70);
+const FOG_ALARM = new THREE.Color(0x475061);
+const HEMI_CALM = new THREE.Color(0x9fbde0);
+const HEMI_ALARM = new THREE.Color(0x93aac6);
+const SUN_CALM = new THREE.Color(0xffd2a1);
+const SUN_ALARM = new THREE.Color(0xffc194);
+const SKY_TOP_CALM = new THREE.Color(0x233c5e);
+const SKY_TOP_ALARM = new THREE.Color(0x1e3049);
+const SKY_MID_CALM = new THREE.Color(0x6c8199);
+const SKY_MID_ALARM = new THREE.Color(0x5f7186);
+
 /**
  * Renderer + scene environment. Owns tonemapping, fog, sky, sun, and the render
  * target sizing policy. Everything visual that is not level geometry or an entity
@@ -140,24 +153,27 @@ export class RenderStack {
     this.scene.add(this.ambient);
   }
 
-  /** Alarm state recolours the whole environment — the loudest readability cue. */
+  /**
+   * Alarm state dims and slightly cools the ambient environment.
+   *
+   * Deliberately understated. An earlier version pushed the fog, sky, sun and
+   * hemisphere hard toward red, which washed the entire second half of the game
+   * in one flat colour *and* collided with the low-health signal — two different
+   * states rendered as the same red screen. The alarm now reads through the local
+   * strobes (which get relatively brighter as this drops the ambient) and the HUD
+   * edge vignette, both of which are localised and unambiguous.
+   */
   setAlarmLighting(t) {
     const k = Math.max(0, Math.min(1, t));
-    const calm = new THREE.Color(0x4a5c70);
-    const alarm = new THREE.Color(0x554653);
-    this.fogColor.copy(calm).lerp(alarm, k);
+    this.fogColor.copy(FOG_CALM).lerp(FOG_ALARM, k);
     this.scene.fog.color.copy(this.fogColor);
     this.scene.background.copy(this.fogColor);
-    this.hemi.color.setHex(0x9fbde0).lerp(new THREE.Color(0xa98f96), k);
-    this.hemi.intensity = 1.35 - 0.32 * k;
-    this.sun.intensity = 2.1 - 0.75 * k;
-    this.sun.color.setHex(0xffd2a1).lerp(new THREE.Color(0xff9d84), k);
-    this.sky.material.uniforms.topColor.value
-      .setHex(0x233c5e)
-      .lerp(new THREE.Color(0x3a1d28), k);
-    this.sky.material.uniforms.midColor.value
-      .setHex(0x6c8199)
-      .lerp(new THREE.Color(0x7d6068), k);
+    this.hemi.color.copy(HEMI_CALM).lerp(HEMI_ALARM, k);
+    this.hemi.intensity = 1.35 - 0.42 * k;
+    this.sun.intensity = 2.1 - 0.62 * k;
+    this.sun.color.copy(SUN_CALM).lerp(SUN_ALARM, k);
+    this.sky.material.uniforms.topColor.value.copy(SKY_TOP_CALM).lerp(SKY_TOP_ALARM, k);
+    this.sky.material.uniforms.midColor.value.copy(SKY_MID_CALM).lerp(SKY_MID_ALARM, k);
   }
 
   setFov(deg) {

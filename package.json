@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Operation Undercurrent — a browser FPS vertical slice built on Three.js",
+  "description": "Operation Undercurrent \u2014 a browser FPS vertical slice built on Three.js",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173",
     "build": "vite build",
@@ -13,7 +13,10 @@
     "test:e2e": "playwright test",
     "verify": "npm run test && npm run build && npm run test:e2e",
     "capture": "node tools/capture.mjs",
-    "profile": "node tools/profile.mjs"
+    "profile": "node tools/profile.mjs",
+    "rubric": "node tools/verify-rubric.mjs",
+    "record:build": "node tools/record-build.mjs",
+    "evidence": "npm run record:build && npm run test && npm run test:e2e && npm run capture && npm run profile && npm run rubric"
   },
   "dependencies": {
     "three": "0.185.1"

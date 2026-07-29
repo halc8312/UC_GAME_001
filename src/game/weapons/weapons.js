@@ -1,4 +1,4 @@
-import { clamp, clamp01, damp, DEG, moveTowards } from '../../core/mathx.js';
+import { clamp01, moveTowards } from '../../core/mathx.js';
 import { WEAPONS } from './weapondefs.js';
 import {
   applySpreadToDirection,
@@ -251,8 +251,14 @@ export class WeaponSystem {
       }
     }
 
-    // Auto-reload when the magazine runs dry and the trigger is released.
-    if (this.slot.mag === 0 && this.slot.reserve > 0 && !this.busy && !cmd.fire) {
+    // Auto-reload when the magazine runs dry.
+    //
+    // Deliberately not conditional on releasing the trigger. Holding fire through
+    // the last round left the weapon empty, silent and un-reloading for as long as
+    // the trigger stayed down — no dry click either, because that path needs a
+    // fresh press. In a firefight that reads as the gun simply having stopped
+    // working, and it is exactly what a player does under pressure.
+    if (this.slot.mag === 0 && this.slot.reserve > 0 && !this.busy) {
       this.startReload();
     }
 

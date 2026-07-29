@@ -51,6 +51,163 @@ async function drive(page, frame, ms) {
 
 const state = (page) => page.evaluate(() => window.__UC.state());
 
+/**
+ * Walk to a world position the way a player would: point at it, hold forward, fight
+ * what gets in the way. No teleporting and no debug kills — if this cannot reach the
+ * helipad, the mission is not actually playable.
+ *
+ * The whole leg runs inside one `page.evaluate` per *segment*, not per step. Driving
+ * it a step at a time cost three browser round-trips per 350 ms of simulated time,
+ * and against a software rasteriser that turned a 145-second withdrawal into
+ * eighteen minutes of wall clock — the test was measuring Playwright's IPC, not the
+ * game. It returns to Node only to handle a death, which needs the real death screen
+ * and the real Retry button.
+ *
+ * Returns the number of times the operator died and retried on the way.
+ */
+async function walkTo(page, tx, tz, { budgetMs = 30_000, tolerance = 3.5, fire = true } = {}) {
+  let deaths = 0;
+  let remaining = budgetMs;
+  while (remaining > 0) {
+    const r = await page.evaluate(([tx, tz, budgetMs, tolerance, fire]) => {
+      const g = window.__UC;
+      const stepMs = 350;
+      let elapsed = 0;
+      let stuck = 0;
+      let lastPos = null;
+      while (elapsed < budgetMs) {
+        const s = g.state();
+        if (s.player.dead) return { died: true, used: elapsed };
+        if (Math.hypot(s.player.x - tx, s.player.z - tz) <= tolerance) {
+          return { reached: true, used: elapsed };
+        }
+        // Break off the fight every third step, and whenever the last few steps
+        // gained no ground: fighting whatever is visible forever stalls the
+        // withdrawal, because the operator keeps turning to shoot and so keeps
+        // walking away from the objective.
+        const push = Math.round(elapsed / stepMs) % 3 === 2 || stuck > 3;
+        const threat = fire && !push
+          ? s.enemies.states
+            .filter((e) => !e.dead && e.visible &&
+              Math.hypot(e.x - s.player.x, e.z - s.player.z) < 20)
+            .sort((a, b) => Math.hypot(a.x - s.player.x, a.z - s.player.z) -
+                            Math.hypot(b.x - s.player.x, b.z - s.player.z))[0]
+          : null;
+        if (threat) {
+          const dist = Math.hypot(threat.x - s.player.x, threat.z - s.player.z);
+          g.look(
+            Math.atan2(-(threat.x - s.player.x), -(threat.z - s.player.z)),
+            Math.atan2((threat.y + 1.2) - (s.player.y + 1.62), Math.max(1, dist)),
+          );
+          // Advance while firing, from the hip. Planting and aiming loses: the
+          // reload is 2.5 s of standing in the open, nothing gets picked up and no
+          // ground is gained. Strafing is not an option either — the catwalks are
+          // two metres wide with a 9 m drop on both sides.
+          g.input({ fire: true, moveZ: 1 });
+        } else {
+          // yaw 0 faces -Z, so heading toward (tx,tz) is atan2(-(dx), -(dz)).
+          // The nudge when stuck matters: the catwalk cover is a square face, and
+          // a head-on collision gives collide-and-slide no lateral component to
+          // work with, so the operator otherwise pushes into a crate forever.
+          g.look(Math.atan2(-(tx - s.player.x), -(tz - s.player.z))
+            + (stuck > 3 ? (Math.floor(stuck / 4) % 2 ? -1 : 1) * 1.0 : 0), -0.02);
+          g.input({ moveZ: 1, sprint: true });
+        }
+        if (lastPos && Math.hypot(s.player.x - lastPos[0], s.player.z - lastPos[1]) < 0.4) stuck++;
+        else stuck = 0;
+        lastPos = [s.player.x, s.player.z];
+        g.step(stepMs);
+        elapsed += stepMs;
+      }
+      return { used: elapsed };
+    }, [tx, tz, remaining, tolerance, fire]);
+
+    remaining -= Math.max(r.used, 350);
+    if (r.reached) return deaths;
+    if (r.died) {
+      deaths++;
+      await page.waitForFunction(() => window.__UC.state().screen === 'death', { timeout: 15_000 });
+      await page.click('#btn-retry');
+      await drive(page, {}, 600);
+      remaining -= 1500;
+      continue;
+    }
+    break;
+  }
+  return deaths;
+}
+
+/**
+ * Hold the helipad: strafe, fight, go and get a medkit when hurt, retry on death.
+ *
+ * Same one-evaluate-per-segment shape as `walkTo`, and for the same reason. A death
+ * *finishes* the mission — as failed — so only a successful finish ends the hold; a
+ * failed one is a death, and a death means retry the beat and hold again.
+ */
+async function holdAndFight(page, { budgetMs = 90_000 } = {}) {
+  let deaths = 0;
+  let remaining = budgetMs;
+  while (remaining > 0) {
+    const r = await page.evaluate(([budgetMs]) => {
+      const g = window.__UC;
+      const stepMs = 600;
+      let elapsed = 0;
+      while (elapsed < budgetMs) {
+        const s = g.state();
+        if (s.finished && s.result && s.result.success) return { won: true, used: elapsed };
+        if (s.finished || s.player.dead) return { died: true, used: elapsed };
+        // Hurt? Go and get something. The hold is 45 unbroken seconds against three
+        // waves and a death restarts the whole beat, so trading fire at 16 HP loses
+        // it every time — there is armour and a medkit on the pad for exactly this.
+        if (s.player.hp < 60) {
+          const kit = g.pickups()
+            .filter((p) => p.kind !== 'ammo' &&
+              Math.hypot(p.x - s.player.x, p.z - s.player.z) < 22)
+            .sort((a, b) => Math.hypot(a.x - s.player.x, a.z - s.player.z) -
+                            Math.hypot(b.x - s.player.x, b.z - s.player.z))[0];
+          if (kit) {
+            g.look(Math.atan2(-(kit.x - s.player.x), -(kit.z - s.player.z)), -0.02);
+            g.input({ moveZ: 1, sprint: true });
+            g.step(stepMs);
+            elapsed += stepMs;
+            continue;
+          }
+        }
+        const threat = s.enemies.states.filter((e) => !e.dead)
+          .sort((a, b) => Math.hypot(a.x - s.player.x, a.z - s.player.z) -
+                          Math.hypot(b.x - s.player.x, b.z - s.player.z))[0];
+        if (threat) {
+          const dist = Math.hypot(threat.x - s.player.x, threat.z - s.player.z);
+          g.look(
+            Math.atan2(-(threat.x - s.player.x), -(threat.z - s.player.z)),
+            Math.atan2((threat.y + 1.2) - (s.player.y + 1.62), Math.max(1, dist)),
+          );
+        }
+        g.input({
+          moveX: Math.sin(elapsed / 2200) > 0 ? 1 : -1,
+          fire: !!threat, aim: !!threat,
+        });
+        g.step(stepMs);
+        elapsed += stepMs;
+      }
+      return { used: elapsed };
+    }, [remaining]);
+
+    remaining -= Math.max(r.used, 600);
+    if (r.won) return deaths;
+    if (r.died) {
+      deaths++;
+      await page.waitForFunction(() => window.__UC.state().screen === 'death', { timeout: 15_000 });
+      await page.click('#btn-retry');
+      await drive(page, {}, 600);
+      remaining -= 1500;
+      continue;
+    }
+    break;
+  }
+  return deaths;
+}
+
 test.beforeAll(async () => {
   await mkdir(SHOTS, { recursive: true });
   await mkdir(LOGS, { recursive: true });
@@ -153,6 +310,10 @@ test('mouselook clamps pitch and leaves yaw free', async ({ page }) => {
 });
 
 test('the player never leaves the world when walking the whole route', async ({ page }) => {
+  // Five checkpoints x four directions x 2.5 s, and every checkpoint now actually
+  // spawns its squad, so the simulation has real work to do on each step. Measured
+  // at 3.1 minutes against a 3-minute default.
+  test.slow();
   await boot(page);
   const checkpoints = [0, 1, 2, 3, 4];
   for (const cp of checkpoints) {
@@ -171,6 +332,12 @@ test('both weapons fire, reload, run dry and switch', async ({ page }) => {
   await boot(page);
   await page.evaluate(() => {
     window.__UC.startMission(1);
+    // This test is about the weapon state machine, not about surviving a
+    // firefight. Checkpoint 1 populates the pump hall, and standing still for
+    // twelve seconds of simulated time to run a magazine dry gets the operator
+    // killed — which freezes the controller and makes every later assertion a
+    // test of the death screen. The AI is covered by its own test.
+    window.__UC.killAllEnemies();
     window.__UC.giveWeapon('shotgun');
   });
   await drive(page, {}, 200);
@@ -211,7 +378,12 @@ test('both weapons fire, reload, run dry and switch', async ({ page }) => {
 
 test('aiming down sights tightens spread and slows the player', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => window.__UC.startMission(1));
+  // Clear the room: this measures the ADS speed penalty, and taking fire adds a
+  // view punch and a death that have nothing to do with the thing under test.
+  await page.evaluate(() => {
+    window.__UC.startMission(1);
+    window.__UC.killAllEnemies();
+  });
   await drive(page, { moveZ: 1 }, 1200);
   const hipSpeed = (await state(page)).player.speed;
   await drive(page, { moveZ: 1, aim: true }, 1200);
@@ -221,6 +393,9 @@ test('aiming down sights tightens spread and slows the player', async ({ page })
 });
 
 test('enemies perceive, path, fight and die — the FSM traverses every state', async ({ page }) => {
+  // Every loop iteration is a browser round-trip, and under SwiftShader this
+  // scenario runs ~3 minutes. It is slow, not broken.
+  test.slow();
   await boot(page);
   await page.evaluate(() => {
     window.__UC.startMission(1);
@@ -260,9 +435,16 @@ test('enemies perceive, path, fight and die — the FSM traverses every state', 
     window.__UC.seed(555);
     window.__UC.teleport(-11, 0.1, 14, Math.PI / 2);
   });
-  await drive(page, {}, 3000);
-  await page.evaluate(() => window.__UC.teleport(0, 0.1, 25, 0));
+  // Seven seconds, not three: a checkpoint restart now grants 2.5 s of respawn
+  // grace, during which the squad is deliberately unaware. Three seconds left
+  // them half a second to acquire, so they never reached COMBAT and therefore
+  // never dropped to SEARCH.
   await drive(page, {}, 7000);
+  // Break contact for real. Standing at the south end of the pump hall is still
+  // in plain view of the squad, so `timeSinceSeen` never passes `loseSightTime`
+  // and nobody ever drops to SEARCH. Leave the room entirely, out onto the dock.
+  await page.evaluate(() => window.__UC.teleport(0, 0.1, 44, 0));
+  await drive(page, {}, 9000);
   await page.evaluate(() => window.__UC.teleport(-11, 0.1, 14, Math.PI / 2));
   await drive(page, { fire: true }, 3000);
   await page.evaluate(() => window.__UC.killAllEnemies());
@@ -304,7 +486,10 @@ test('enemies damage the player and the player can die and retry', async ({ page
 
 test('pause suspends the simulation and resumes cleanly', async ({ page }) => {
   await boot(page);
-  await page.evaluate(() => window.__UC.startMission(1));
+  await page.evaluate(() => {
+    window.__UC.startMission(1);
+    window.__UC.killAllEnemies();
+  });
   await drive(page, {}, 500);
 
   await page.evaluate(() => window.__UC.pause());
@@ -349,7 +534,11 @@ test('settings change behaviour and survive a reload', async ({ page }) => {
 });
 
 test('the full mission is playable from the menu to the results screen', async ({ page }) => {
-  test.slow();
+  // Not slow-because-broken: this walks, shoots, dies and retries through the
+  // whole mission, and every loop iteration is a browser round-trip against a
+  // software rasteriser. The 45-second extraction hold has to be survived in one
+  // life, so it takes as many attempts as it takes.
+  test.setTimeout(1_800_000);
   const cap = await boot(page);
   const timeline = [];
 
@@ -407,41 +596,39 @@ test('the full mission is playable from the menu to the results screen', async (
   await drive(page, {}, 200);
   expect((await state(page)).weapon.owned, 'shotgun pickup failed').toContain('shotgun');
 
-  await page.evaluate(() => {
-    window.__UC.teleport(-10, 0.1, -28.2, 0);
-    window.__UC.look(0, -0.14);
-  });
+  const CORE_STAND = [-10, 0.1, -28.2, 0, -0.14];
+  await page.evaluate(([p]) => {
+    window.__UC.teleport(p[0], p[1], p[2], p[3]);
+    window.__UC.look(p[3], p[4]);
+  }, [CORE_STAND]);
   await drive(page, {}, 300);
   expect((await state(page)).interactTarget).toBe('data_core');
-  await drive(page, { interactHeld: true }, 4600);
+  await holdInteract(page, 'data_core', 2, CORE_STAND, { budgetMs: 60_000 });
   s = await state(page);
   expect(s.objectives[2].state, 'objective 3 (data core) did not complete').toBe('done');
   expect(s.alarm, 'taking the core did not trip the alarm').toBe(true);
   timeline.push({ at: s.missionTime, event: 'objective_3_done_alarm', phase: s.phase });
   await page.screenshot({ path: `${SHOTS}/run-03-core-alarm.png` });
 
-  // Beat 4: fight out to the helipad.
+  // Beat 4: fight out to the helipad, walking and shooting for real.
   await drive(page, {}, 2000);
   await page.evaluate(() => window.__UC.teleport(21.8, 6.5, -22, -Math.PI / 2));
-  for (let i = 0; i < 60 && (await state(page)).objectives[3].state !== 'done'; i++) {
-    await page.evaluate(() => window.__UC.killAllEnemies());
-    await drive(page, { moveZ: 1, fire: true }, 400);
-  }
+  let deaths = 0;
+  deaths += await walkTo(page, 28, -22, { budgetMs: 45_000 });
+  deaths += await walkTo(page, 28, -2, { budgetMs: 40_000 });
+  deaths += await walkTo(page, 35, 1, { budgetMs: 60_000 });
   s = await state(page);
   expect(s.objectives[3].state, 'objective 4 (reach helipad) did not complete').toBe('done');
-  timeline.push({ at: s.missionTime, event: 'objective_4_done', phase: s.phase });
+  timeline.push({ at: s.missionTime, event: 'objective_4_done', phase: s.phase, deaths });
   await page.screenshot({ path: `${SHOTS}/run-04-helipad.png` });
 
-  // Beat 5: hold for extraction.
-  for (let i = 0; i < 80 && !(await state(page)).finished; i++) {
-    await page.evaluate(() => window.__UC.killAllEnemies());
-    await drive(page, {}, 1000);
-  }
+  // Beat 5: hold for extraction, fighting the three waves.
+  deaths += await holdAndFight(page, { budgetMs: 300_000 });
   s = await state(page);
   expect(s.objectives[4].state, 'objective 5 (hold) did not complete').toBe('done');
   expect(s.finished).toBe(true);
   expect(s.result.success).toBe(true);
-  timeline.push({ at: s.missionTime, event: 'mission_complete', result: s.result });
+  timeline.push({ at: s.missionTime, event: 'mission_complete', result: s.result, deaths });
 
   await page.waitForFunction(() => window.__UC.state().screen === 'results', { timeout: 20_000 });
   await page.screenshot({ path: `${SHOTS}/run-05-results.png` });
@@ -466,6 +653,8 @@ test('the full mission is playable from the menu to the results screen', async (
   await writeFile(`${LOGS}/e2e-playthrough.json`, JSON.stringify({
     timeline,
     result: s.result,
+    deathsDuringRun: deaths,
+    playedWithoutDebugKills: true,
     audioEventCount: audioLog.length,
     distinctSounds: [...played].sort(),
     consoleErrors: cap.consoleErrors,
@@ -545,8 +734,18 @@ test('a seeded run is reproducible', async ({ page }) => {
   await boot(page);
   const run = async () => {
     await page.evaluate(() => {
+      // Freeze the wall-clock advance first: otherwise real rAF frames tick the
+      // simulation between these `evaluate` calls, carrying whatever input frame
+      // the previous run left installed, and the second run starts from a
+      // different world than the first.
+      window.__UC.freeze(true);
+      // Seed before starting. `startMission` draws from the stream (patrol
+      // phases, spawn jitter), so seeding afterwards leaves the mission set up
+      // from wherever the previous run left the generator.
+      window.__UC.seed(4242);
       window.__UC.startMission(1);
       window.__UC.seed(4242);
+      window.__UC.input({});
     });
     await drive(page, { moveZ: 1, fire: true }, 3000);
     const s = await state(page);
@@ -559,5 +758,6 @@ test('a seeded run is reproducible', async ({ page }) => {
   };
   const a = await run();
   const b = await run();
+  await page.evaluate(() => window.__UC.freeze(false));
   expect(b).toEqual(a);
 });

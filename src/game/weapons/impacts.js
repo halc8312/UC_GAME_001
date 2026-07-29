@@ -21,6 +21,7 @@ const _s = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 const _fwd = new THREE.Vector3(0, 0, 1);
 const _color = new THREE.Color();
+const _pos = new THREE.Vector3();
 const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
 
 /**
@@ -246,7 +247,8 @@ export class ImpactSystem {
       _v.set(d.nx, d.ny, d.nz);
       _q.setFromUnitVectors(_fwd, _v.lengthSq() > 0 ? _v.normalize() : _up);
       _s.set(size, size, size);
-      _m.compose(new THREE.Vector3(d.x, d.y, d.z), _q, _s);
+      _pos.set(d.x, d.y, d.z);
+      _m.compose(_pos, _q, _s);
       this.decalMesh.setMatrixAt(d.i, _m);
       this._dirty.decals = true;
     }
@@ -293,10 +295,8 @@ export class ImpactSystem {
       _q.setFromUnitVectors(_fwd, _v);
       const k = 1 - clamp01(t.life / t.maxLife);
       _s.set(t.width, t.width, len);
-      _m.compose(
-        new THREE.Vector3((t.x0 + t.x1) / 2, (t.y0 + t.y1) / 2, (t.z0 + t.z1) / 2),
-        _q, _s,
-      );
+      _pos.set((t.x0 + t.x1) / 2, (t.y0 + t.y1) / 2, (t.z0 + t.z1) / 2);
+      _m.compose(_pos, _q, _s);
       this.tracerMesh.setMatrixAt(t.i, _m);
       this.tracerMat.opacity = 0.28 + 0.55 * k;
     }

@@ -4,6 +4,7 @@ import { FIXED_DT } from './core/loop.js';
 import { SCREEN } from './ui/screens.js';
 import { PHASE } from './game/mission/director.js';
 import { AI_STATE_ORDER } from './game/ai/fsm.js';
+import { saveSettings } from './core/storage.js';
 
 const canvas = document.getElementById('view');
 const game = new Game(canvas);
@@ -128,6 +129,20 @@ function installTestHooks(g, errorList) {
       return true;
     },
 
+    /**
+     * Suspend the loop's wall-clock advance, leaving `step()` as the only source
+     * of simulated time.
+     *
+     * Without this, real rAF frames tick the simulation between two `evaluate`
+     * calls, with whatever input frame happened to be installed — so a
+     * determinism test measures the browser's frame pacing as much as the game.
+     * Rendering continues, so screenshots still work while frozen.
+     */
+    freeze(v = true) {
+      g.loop.setPaused(!!v);
+      return !!v;
+    },
+
     teleport(x, y, z, yaw) {
       g.player.controller.setPosition(x, y, z);
       if (yaw !== undefined) g.player.controller.yaw = yaw;
@@ -221,6 +236,13 @@ function installTestHooks(g, errorList) {
       return g.enemies.traces();
     },
 
+    /** Live pickups, so a headless run can go and get one when it is hurt. */
+    pickups() {
+      return g.director.pickups
+        .filter((p) => !p.taken)
+        .map((p) => ({ id: p.id, kind: p.kind, x: p.x, y: p.y, z: p.z, amount: p.amount }));
+    },
+
     errors() {
       return errorList;
     },
@@ -228,6 +250,11 @@ function installTestHooks(g, errorList) {
     settings(patch) {
       if (patch) {
         Object.assign(g.settings, patch);
+        // Persist, exactly as the settings UI does. Without this the hook was an
+        // unfaithful stand-in for a user changing a setting, and the e2e
+        // "settings survive a reload" assertion was testing a path the game
+        // never takes.
+        saveSettings(g.settings);
         g.bus.emit('settings:changed', { key: '*', value: null });
         g.screens.syncSettings();
       }
@@ -239,6 +266,10 @@ function installTestHooks(g, errorList) {
   };
 
   window.__UC = api;
+  // Raw app handle for ad-hoc probes (tools/_probe.mjs). The curated `__UC`
+  // surface above is what tests use; this is the escape hatch for the times a
+  // rendering question can only be answered by reaching into the scene graph.
+  window.__UC_APP = g;
   return api;
 }
 

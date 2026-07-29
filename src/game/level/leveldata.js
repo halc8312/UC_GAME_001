@@ -197,8 +197,14 @@ export function buildColliders() {
   push(box([30, cy, -25.4], [30.4, cy + 1.1, -6], SURFACE.METAL, RAILING_OPTS));
   push(box([26, cy, 2], [30.4, cy + 1.1, 2.4], SURFACE.METAL, RAILING_OPTS));
   // Cover on the catwalk run.
-  push(box([27.0, cy, -16.0], [29.6, cy + 1.3, -14.4], SURFACE.METAL, { tag: 'crate' }));
-  push(box([26.2, cy, -9.0], [28.2, cy + 1.3, -7.4], SURFACE.METAL, { tag: 'crate' }));
+  //
+  // Sized so a 0.8 m-wide operator can pass on *either* side. The first cut left a
+  // 1.0 m gap west and 0.4 m east, and walking north into the crate face is a
+  // perpendicular hit with no lateral component for collide-and-slide to work
+  // with — the player simply stopped dead and the withdrawal was impassable in a
+  // straight line.
+  push(box([27.3, cy, -16.0], [28.9, cy + 1.3, -14.4], SURFACE.METAL, { tag: 'crate' }));
+  push(box([26.5, cy, -9.0], [28.1, cy + 1.3, -7.4], SURFACE.METAL, { tag: 'crate' }));
   push(box([21.2, cy, -24.6], [23.2, cy + 1.3, -23.0], SURFACE.METAL, { tag: 'crate' }));
 
   // Support columns down to the yard, so the catwalk reads as built, not floating.
@@ -411,6 +417,7 @@ export const PICKUPS = [
   { id: 'ammo_2', kind: 'ammo', x: -20.6, y: 0.4, z: -29.4, amount: 60 },
   { id: 'health_1', kind: 'health', x: 4.2, y: 0.4, z: -27.4, amount: 40 },
   { id: 'ammo_3', kind: 'ammo', x: 22.4, y: CATWALK_Y + 0.4, z: -23.8, amount: 60 },
+  { id: 'armor_3', kind: 'armor', x: 26.6, y: CATWALK_Y + 0.4, z: -20.6, amount: 50 },
   { id: 'armor_2', kind: 'armor', x: 34.2, y: CATWALK_Y + 0.4, z: -3.4, amount: 50 },
   { id: 'health_2', kind: 'health', x: 41.4, y: CATWALK_Y + 0.4, z: 4.6, amount: 40 },
   { id: 'ammo_4', kind: 'ammo', x: 32.8, y: CATWALK_Y + 0.4, z: 5.6, amount: 60 },
@@ -432,8 +439,8 @@ export const ENEMY_SPAWNS = [
   { id: 'e_srv_3', beat: 'server_room', x: -10, y: 0, z: -33, yaw: 0, patrol: ['srv_core', 'srv_rack_c'], alert: false },
 
   { id: 'e_cw_1', beat: 'withdrawal', x: 28, y: CATWALK_Y, z: -11, yaw: -Math.PI / 2, patrol: ['cw_b2', 'cw_b1'], alert: true },
-  { id: 'e_cw_2', beat: 'withdrawal', x: 28, y: CATWALK_Y, z: -3, yaw: -Math.PI / 2, patrol: ['cw_b3', 'cw_b_cover2'], alert: true },
-  { id: 'e_cw_3', beat: 'withdrawal', x: 31.4, y: CATWALK_Y, z: 0, yaw: Math.PI, patrol: ['heli_w', 'cw_b4'], alert: true },
+  { id: 'e_cw_2', beat: 'withdrawal', x: 28, y: CATWALK_Y, z: -3, yaw: -Math.PI / 2, patrol: ['cw_b3', 'cw_b_cover2'], alert: false },
+  { id: 'e_cw_3', beat: 'withdrawal', x: 31.4, y: CATWALK_Y, z: 0, yaw: Math.PI, patrol: ['heli_w', 'cw_b4'], alert: false },
   { id: 'e_cw_4', beat: 'withdrawal', x: 10.4, y: 0, z: -23, yaw: 0, patrol: ['tower_base', 'srv_e'], alert: true },
   { id: 'e_cw_5', beat: 'withdrawal', x: 28.2, y: CATWALK_Y, z: -13.4, yaw: -Math.PI / 2, patrol: ['cw_b_cover1', 'cw_b2'], alert: true },
 
@@ -454,12 +461,12 @@ export const ENEMY_SPAWNS = [
  * at. Tuning these as if they were legacy 0–1 values leaves every room black.
  */
 export const LIGHTS = [
-  { id: 'dock_mast_1', kind: 'lamp', x: -7.2, y: 5.2, z: 50, color: 0xffb15e, intensity: 130, distance: 26 },
-  { id: 'dock_mast_2', kind: 'lamp', x: 7.2, y: 5.2, z: 40, color: 0xffb15e, intensity: 130, distance: 26 },
-  { id: 'dock_mast_3', kind: 'lamp', x: -7.2, y: 5.2, z: 36, color: 0xffc27a, intensity: 110, distance: 22 },
-  { id: 'apron_lamp', kind: 'lamp', x: 0, y: 5.6, z: 29.4, color: 0xffc27a, intensity: 190, distance: 30, shadow: true },
-  { id: 'apron_lamp_w', kind: 'lamp', x: -11, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22 },
-  { id: 'apron_lamp_e', kind: 'lamp', x: 15, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22 },
+  { id: 'dock_mast_1', kind: 'lamp', x: -7.2, y: 5.2, z: 50, color: 0xffb15e, intensity: 130, distance: 26, mast: [0, -0.9, 0] },
+  { id: 'dock_mast_2', kind: 'lamp', x: 7.2, y: 5.2, z: 40, color: 0xffb15e, intensity: 130, distance: 26, mast: [0, 0.9, 0] },
+  { id: 'dock_mast_3', kind: 'lamp', x: -7.2, y: 5.2, z: 36, color: 0xffc27a, intensity: 110, distance: 22, mast: [0, -0.9, 0] },
+  { id: 'apron_lamp', kind: 'lamp', x: 0, y: 5.6, z: 29.4, color: 0xffc27a, intensity: 190, distance: 30, shadow: true, mast: [0, 0, 1.1] },
+  { id: 'apron_lamp_w', kind: 'lamp', x: -11, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22, mast: [0, -1.0, 0] },
+  { id: 'apron_lamp_e', kind: 'lamp', x: 15, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22, mast: [0, 1.0, 0] },
 
   { id: 'hall_lamp_1', kind: 'lamp', x: -8, y: 7.6, z: 22, color: 0xd8e6ff, intensity: 340, distance: 34, shadow: true },
   { id: 'hall_lamp_2', kind: 'lamp', x: 6, y: 7.6, z: 13, color: 0xd8e6ff, intensity: 320, distance: 34 },
@@ -479,18 +486,18 @@ export const LIGHTS = [
   { id: 'tower_lamp', kind: 'lamp', x: 13, y: 7.6, z: -27, color: 0xffc27a, intensity: 220, distance: 26 },
   { id: 'tower_lamp_2', kind: 'lamp', x: 11, y: 3.4, z: -23, color: 0xffc27a, intensity: 62, distance: 15 },
 
-  { id: 'cw_lamp_1', kind: 'lamp', x: 28, y: CATWALK_Y + 3.0, z: -19, color: 0xffb15e, intensity: 62, distance: 22 },
-  { id: 'cw_lamp_2', kind: 'lamp', x: 28, y: CATWALK_Y + 3.0, z: -6, color: 0xffb15e, intensity: 62, distance: 22 },
-  { id: 'cw_lamp_3', kind: 'lamp', x: 23, y: CATWALK_Y + 3.0, z: -23, color: 0xffb15e, intensity: 58, distance: 20 },
+  { id: 'cw_lamp_1', kind: 'lamp', x: 28, y: CATWALK_Y + 3.0, z: -19, color: 0xffb15e, intensity: 62, distance: 22, mast: [CATWALK_Y, 1.0, 0] },
+  { id: 'cw_lamp_2', kind: 'lamp', x: 28, y: CATWALK_Y + 3.0, z: -6, color: 0xffb15e, intensity: 62, distance: 22, mast: [CATWALK_Y, 1.0, 0] },
+  { id: 'cw_lamp_3', kind: 'lamp', x: 23, y: CATWALK_Y + 3.0, z: -23, color: 0xffb15e, intensity: 58, distance: 20, mast: [CATWALK_Y, -1.0, 0] },
 
-  { id: 'heli_lamp', kind: 'lamp', x: 37, y: CATWALK_Y + 4.4, z: 1, color: 0xfff0d8, intensity: 130, distance: 34, shadow: true },
-  { id: 'heli_lamp_w', kind: 'lamp', x: 32, y: CATWALK_Y + 2.6, z: -4, color: 0xffb15e, intensity: 48, distance: 18 },
-  { id: 'heli_lamp_e', kind: 'lamp', x: 42, y: CATWALK_Y + 2.6, z: 5, color: 0xffb15e, intensity: 48, distance: 18 },
+  { id: 'heli_lamp', kind: 'lamp', x: 37, y: CATWALK_Y + 4.4, z: 1, color: 0xfff0d8, intensity: 130, distance: 34, shadow: true, mast: [CATWALK_Y, 0, 1.4] },
+  { id: 'heli_lamp_w', kind: 'lamp', x: 32, y: CATWALK_Y + 2.6, z: -4, color: 0xffb15e, intensity: 48, distance: 18, mast: [CATWALK_Y, -1.0, 0] },
+  { id: 'heli_lamp_e', kind: 'lamp', x: 42, y: CATWALK_Y + 2.6, z: 5, color: 0xffb15e, intensity: 48, distance: 18, mast: [CATWALK_Y, 1.0, 0] },
 
-  { id: 'alarm_hall', kind: 'strobe', x: 0, y: 8.2, z: 14, color: 0xff2a18, intensity: 0, distance: 16 },
-  { id: 'alarm_srv', kind: 'strobe', x: -10, y: 4.6, z: -26, color: 0xff2a18, intensity: 0, distance: 14 },
-  { id: 'alarm_cw', kind: 'strobe', x: 28, y: CATWALK_Y + 2.4, z: -12, color: 0xff2a18, intensity: 0, distance: 15 },
-  { id: 'alarm_heli', kind: 'strobe', x: 37, y: CATWALK_Y + 3.2, z: -4, color: 0xff2a18, intensity: 0, distance: 16 },
+  { id: 'alarm_hall', kind: 'strobe', x: 0, y: 8.2, z: 14, color: 0xff2a18, intensity: 0, distance: 9 },
+  { id: 'alarm_srv', kind: 'strobe', x: -10, y: 4.6, z: -26, color: 0xff2a18, intensity: 0, distance: 7 },
+  { id: 'alarm_cw', kind: 'strobe', x: 28, y: CATWALK_Y + 2.4, z: -12, color: 0xff2a18, intensity: 0, distance: 8, mast: [CATWALK_Y, 0, 0] },
+  { id: 'alarm_heli', kind: 'strobe', x: 37, y: CATWALK_Y + 3.2, z: -4, color: 0xff2a18, intensity: 0, distance: 9, mast: [CATWALK_Y, 0, 0] },
 ];
 
 /** World bounds; anything outside is a fall-out and gets caught by the safety net. */

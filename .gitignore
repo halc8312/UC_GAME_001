@@ -1,0 +1,13 @@
+# Dependencies and build output are reproducible from package-lock.json and
+# `npm run build`; they do not belong in the history.
+node_modules/
+dist/
+
+# Playwright's per-run scratch output. The evidence that matters is written to
+# artifacts/ by the tools in tools/ and is committed on purpose.
+test-results/
+playwright-report/
+
+# OS / editor noise
+.DS_Store
+*.swp

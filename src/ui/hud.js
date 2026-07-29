@@ -23,7 +23,9 @@ export class Hud {
     this.settings = settings;
     this.root = $('hud');
     this.el = {
+      view: $('view'),
       vignette: $('vignette'),
+      alarmVig: $('alarm-vig'),
       hurtFlash: $('hurt-flash'),
       crosshair: $('crosshair'),
       hitmarker: $('hitmarker'),
@@ -127,9 +129,34 @@ export class Hud {
       this.el.armorNum.textContent = String(v);
     });
 
-    // Low-health vignette is the primary "you are about to die" signal.
-    this._set('hurtVig', hp <= 35, (v) => {
-      this.el.vignette.classList.toggle('hurt', v);
+    // Low health: darkened corners plus a desaturated scene. Deliberately not
+    // red — red belongs to the alarm, and two states sharing one colour is how
+    // players stop reading either of them.
+    const low = hp <= 45;
+    const crit = hp <= 22;
+    const desat = low && this.settings.screenEffects !== false;
+    this._set('hurtVig', `${low}|${crit}|${desat}`, () => {
+      this.el.vignette.classList.toggle('hurt', low);
+      this.el.vignette.classList.toggle('crit', crit);
+      this.el.view?.classList.toggle('lowhp', desat);
+      this.el.view?.classList.toggle('crit', desat && crit);
+    });
+  }
+
+  /**
+   * Alarm state as a red *edge* vignette.
+   *
+   * Strobing at the frame border rather than tinting the whole image: the world
+   * keeps its own colour, and the signal still hits peripheral vision, which is
+   * what it is for. `reducedFlash` swaps the pulse for a steady band.
+   */
+  setAlarm(on, reducedFlash = false) {
+    const mode = !on ? '' : reducedFlash ? 'steady' : 'on';
+    this._set('alarmVig', mode, (v) => {
+      const el = this.el.alarmVig;
+      if (!el) return;
+      el.classList.toggle('on', v === 'on');
+      el.classList.toggle('steady', v === 'steady');
     });
   }
 
@@ -173,6 +200,9 @@ export class Hud {
     this._set('chGap', gap, (v) => {
       this.el.crosshair.style.setProperty('--gap', `${v}px`);
     });
+    // The arms fold away at full ADS but the centre dot stays. Deleting the whole
+    // reticle leaves the player with no aim reference at all while the receiver
+    // occupies the lower middle of the frame.
     this._set('chAds', adsFactor > 0.85, (v) => {
       this.el.crosshair.classList.toggle('hidden-ch', v);
     });
@@ -227,7 +257,7 @@ export class Hud {
     }
   }
 
-  updateCompass(yaw, objectiveMarker, playerPos) {
+  updateCompass(yaw) {
     // yaw 0 faces -Z (north). Positive yaw turns left.
     let heading = (-yaw * 180) / Math.PI;
     heading = ((heading % 360) + 360) % 360;
@@ -419,7 +449,9 @@ export class Hud {
     this._toasts.length = 0;
     this.el.subtitle.classList.remove('show');
     this.el.hurtFlash.style.opacity = '0';
-    this.el.vignette.classList.remove('hurt');
+    this.el.vignette.classList.remove('hurt', 'crit');
+    this.el.view?.classList.remove('lowhp', 'crit');
+    this.el.alarmVig?.classList.remove('on', 'steady');
     for (const el of this._markers.values()) el.style.display = 'none';
   }
 }

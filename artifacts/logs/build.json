@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-07-28T15:33:03.016Z",
+  "node": "v22.22.2",
+  "installVulnerabilities": 0,
+  "buildOk": true,
+  "buildOutput": [
+    "> uc-game-001@1.0.0 build",
+    "> vite build",
+    "",
+    "vite v8.1.5 building client environment for production...",
+    "\u001b[2K\rtransforming...✓ 42 modules transformed.",
+    "rendering chunks...",
+    "computing gzip size...",
+    "dist/index.html                  11.02 kB │ gzip:   2.66 kB",
+    "dist/assets/index-CcEczTcW.css   17.83 kB │ gzip:   4.71 kB",
+    "dist/assets/index-BBmuperc.js   205.42 kB │ gzip:  65.05 kB │ map:   699.97 kB",
+    "dist/assets/three-C6O9aOTb.js   728.50 kB │ gzip: 185.62 kB │ map: 2,995.52 kB",
+    "",
+    "✓ built in 369ms"
+  ],
+  "appGzipKB": 70.1,
+  "threeGzipKB": 180,
+  "totalGzipKB": 250.1,
+  "distFiles": [
+    "index-BBmuperc.js",
+    "index-BBmuperc.js.map",
+    "index-CcEczTcW.css",
+    "three-C6O9aOTb.js",
+    "three-C6O9aOTb.js.map"
+  ],
+  "detail": [
+    {
+      "file": "index-BBmuperc.js",
+      "rawKB": 200.6,
+      "gzipKB": 62.9,
+      "isThree": false
+    },
+    {
+      "file": "index-CcEczTcW.css",
+      "rawKB": 17.4,
+      "gzipKB": 4.6,
+      "isThree": false
+    },
+    {
+      "file": "three-C6O9aOTb.js",
+      "rawKB": 711.4,
+      "gzipKB": 180,
+      "isThree": true
+    },
+    {
+      "file": "index.html",
+      "rawKB": 10.8,
+      "gzipKB": 2.6,
+      "isThree": false
+    }
+  ],
+  "assetFilesInRepo": []
+}

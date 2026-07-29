@@ -1,4 +1,4 @@
-import { clamp, clamp01, damp, DEG, angleDelta, planarDist, v3 } from '../../core/mathx.js';
+import { clamp, clamp01, DEG, angleDelta, planarDist, v3 } from '../../core/mathx.js';
 import { moveAndSlide } from '../level/collision.js';
 import { applyDamage } from '../combat/damage.js';
 import { AI_STATE, AI_STATE_ORDER, StateMachine } from './fsm.js';
@@ -94,6 +94,10 @@ export class Enemy {
     this.huntTimer = 0;
     this._lastPos = v3();
     this._avoid = v3();
+    this._modelStateCache = {
+      x: 0, y: 0, z: 0, yaw: 0, pitch: 0, speed: 0,
+      aiming: false, dead: false, deathDir: 1, flinch: 0, crouch: 0, firing: 0,
+    };
 
     this.follower = new PathFollower(ctx.nav);
     this.model = new EnemyModel(ctx.materials);
@@ -632,6 +636,27 @@ export class Enemy {
     }
   }
 
+  /**
+   * Drop all knowledge of the player and hold fire for this step.
+   *
+   * Used by the manager's respawn grace: an alerted contractor that has already
+   * acquired the player will otherwise open up on the frame the player reappears
+   * at a checkpoint.
+   */
+  forget() {
+    if (this.dead) return;
+    this.awareness = 0;
+    this.hasLastKnown = false;
+    this.timeSinceSeen = 999;
+    this.visible = false;
+    this.fireCooldown = Math.max(this.fireCooldown, 0.35);
+    if (this.fsm.current !== AI_STATE.IDLE && this.fsm.current !== AI_STATE.PATROL) {
+      this.fsm.transition(
+        this.patrol.length > 1 ? AI_STATE.PATROL : AI_STATE.IDLE, 'respawn_grace',
+      );
+    }
+  }
+
   update(dt) {
     if (!this.active) return;
 
@@ -732,18 +757,22 @@ export class Enemy {
     }
   }
 
+  /** Reuses one record per enemy: this runs every frame for every contractor. */
   _modelState() {
-    return {
-      x: this.pos.x, y: this.pos.y, z: this.pos.z,
-      yaw: this.yaw, pitch: -this.pitch,
-      speed: this.speed,
-      aiming: this.aiming,
-      dead: this.dead,
-      deathDir: this.deathDir,
-      flinch: this.flinch,
-      crouch: this.crouchFactor,
-      firing: this.firingT > 0 ? this.firingT / 0.06 : 0,
-    };
+    const s = this._modelStateCache;
+    s.x = this.pos.x;
+    s.y = this.pos.y;
+    s.z = this.pos.z;
+    s.yaw = this.yaw;
+    s.pitch = -this.pitch;
+    s.speed = this.speed;
+    s.aiming = this.aiming;
+    s.dead = this.dead;
+    s.deathDir = this.deathDir;
+    s.flinch = this.flinch;
+    s.crouch = this.crouchFactor;
+    s.firing = this.firingT > 0 ? this.firingT / 0.06 : 0;
+    return s;
   }
 
   dispose() {
@@ -766,6 +795,8 @@ export class EnemyManager {
     this.totalSpawned = 0;
     this.totalKilled = 0;
     this.stateTrace = [];
+    // Seconds of post-respawn grace still owed to the player. See `setSpawnGrace`.
+    this.spawnGrace = 0;
 
     for (let i = 0; i < capacity; i++) this.pool.push(new Enemy(this.ctx));
 
@@ -828,7 +859,25 @@ export class EnemyManager {
     }
   }
 
+  /**
+   * Give the player a moment to orient after a checkpoint restart.
+   *
+   * Without it, respawning at the catwalk checkpoint drops the operator into the
+   * open with three already-alerted contractors inside 13 m and a fourth below —
+   * they are dead again within four seconds, retry after retry, and the beat is
+   * unwinnable rather than hard. During grace the squad's awareness is held at
+   * zero and nobody fires, so the fight starts when the player is on their feet.
+   */
+  setSpawnGrace(seconds) {
+    this.spawnGrace = Math.max(this.spawnGrace, seconds);
+    for (const e of this.live) e.forget();
+  }
+
   update(dt) {
+    if (this.spawnGrace > 0) {
+      this.spawnGrace = Math.max(0, this.spawnGrace - dt);
+      for (const e of this.live) e.forget();
+    }
     this._shareContacts();
     for (let i = this.live.length - 1; i >= 0; i--) {
       const e = this.live[i];

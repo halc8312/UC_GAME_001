@@ -1,4 +1,4 @@
-import { clamp, clamp01, planarDist, v3 } from '../../core/mathx.js';
+import { clamp01 } from '../../core/mathx.js';
 import { PlayerController } from './controller.js';
 import {
   addArmor, applyDamage, damageDirection, fallDamage, heal, hitboxesFor, rayHitboxes,

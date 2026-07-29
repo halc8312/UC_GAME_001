@@ -5,7 +5,7 @@ export const MATERIAL_NAMES = [
   'floor_concrete', 'wall_concrete', 'wall_panel', 'steel', 'steel_dark', 'rust',
   'grating', 'glass', 'water', 'hazard', 'crate', 'screen', 'emissive_amber',
   'emissive_red', 'emissive_green', 'pipe', 'rubber', 'enemy_body', 'enemy_visor',
-  'weapon_body', 'weapon_dark', 'decal_bullet', 'enemy_accent',
+  'weapon_body', 'weapon_dark', 'weapon_glove', 'decal_bullet', 'enemy_accent',
 ];
 
 /**
@@ -14,15 +14,15 @@ export const MATERIAL_NAMES = [
  * which is the correct trade for this scene.
  */
 const RECIPES = {
-  floor_concrete: { tex: 'concrete_wet', color: 0x8a9096, rough: 0.90, metal: 0.0, normal: 1.3, roughBase: 0.86 },
-  wall_concrete: { tex: 'concrete', color: 0x92999e, rough: 0.95, metal: 0.0, normal: 1.7, roughBase: 0.92 },
-  wall_panel: { tex: 'panel_wall', color: 0x7b868f, rough: 0.82, metal: 0.08, normal: 1.9, roughBase: 0.8 },
-  steel: { tex: 'steel_painted', color: 0x9aa4ac, rough: 0.76, metal: 0.14, normal: 0.9, roughBase: 0.72 },
-  steel_dark: { tex: 'steel_painted', color: 0x6e7880, rough: 0.82, metal: 0.10, normal: 0.8, roughBase: 0.78 },
+  floor_concrete: { tex: 'concrete_wet', color: 0x8f959b, rough: 0.99, metal: 0.0, normal: 1.3, roughBase: 0.95, roughRange: 0.12 },
+  wall_concrete: { tex: 'concrete', color: 0x969da2, rough: 0.99, metal: 0.0, normal: 1.7, roughBase: 0.95, roughRange: 0.14 },
+  wall_panel: { tex: 'panel_wall', color: 0x818c95, rough: 0.9, metal: 0.06, normal: 1.9, roughBase: 0.88, roughRange: 0.16 },
+  steel: { tex: 'steel_painted', color: 0x9aa4ac, rough: 0.86, metal: 0.12, roughRange: 0.2, normal: 0.9, roughBase: 0.72 },
+  steel_dark: { tex: 'steel_painted', color: 0x808a92, rough: 0.9, metal: 0.08, roughRange: 0.2, normal: 0.8, roughBase: 0.78 },
   rust: { tex: 'steel_rusted', color: 0x8f6440, rough: 0.93, metal: 0.06, normal: 2.0, roughBase: 0.9 },
   pipe: { tex: 'pipe_metal', color: 0x88929a, rough: 0.42, metal: 0.85, normal: 1.1, roughBase: 0.4 },
   grating: {
-    tex: 'grating', color: 0x646d74, rough: 0.86, metal: 0.12, normal: 1.0, roughBase: 0.84,
+    tex: 'grating', color: 0x767f86, rough: 0.94, metal: 0.1, normal: 1.0, roughBase: 0.92, roughRange: 0.14,
     alphaTest: 0.5, alphaKind: 'grating', side: THREE.DoubleSide,
   },
   glass: {
@@ -30,12 +30,15 @@ const RECIPES = {
     transparent: true, opacity: 0.36, side: THREE.DoubleSide,
   },
   water: { tex: 'water', color: 0x3b5b70, rough: 0.14, metal: 0.5, normal: 1.6, roughBase: 0.16 },
-  hazard: { tex: 'hazard_stripe', color: 0xcfc9bc, rough: 0.85, metal: 0.0, normal: 0.9, roughBase: 0.84 },
-  crate: { tex: 'crate_wood', color: 0x93765a, rough: 0.94, metal: 0.0, normal: 1.7, roughBase: 0.92 },
-  rubber: { tex: 'rubber_mat', color: 0x4a4f52, rough: 0.95, metal: 0.0, normal: 1.6, roughBase: 0.93 },
+  hazard: { tex: 'hazard_stripe', color: 0xcfc9bc, rough: 0.95, metal: 0.0, normal: 0.9, roughBase: 0.93, roughRange: 0.12 },
+  crate: { tex: 'crate_wood', color: 0x9c8064, rough: 0.98, metal: 0.0, normal: 1.7, roughBase: 0.95, roughRange: 0.12 },
+  rubber: { tex: 'rubber_mat', color: 0x565c60, rough: 0.99, metal: 0.0, normal: 1.6, roughBase: 0.96, roughRange: 0.1 },
+  // Indigo, not cyan. Saturated cyan is reserved for contractor markings, and the
+  // server room's forty-odd rack strips were spending it on scenery — in that
+  // room the one colour that means "threat" meant "furniture".
   screen: {
-    tex: 'screen_static', color: 0x1a2a34, rough: 0.28, metal: 0.1, normal: 0.4, roughBase: 0.3,
-    emissiveMap: true, emissive: 0x2fd0ff, emissiveIntensity: 1.5,
+    tex: 'screen_static', color: 0x1c2340, rough: 0.28, metal: 0.1, normal: 0.4, roughBase: 0.3,
+    emissiveMap: true, emissive: 0x4f63e0, emissiveIntensity: 1.4,
   },
 };
 
@@ -84,7 +87,7 @@ export class MaterialLibrary {
       params.normalMap = nrm;
       params.normalScale = new THREE.Vector2(r.normal * 0.5, r.normal * 0.5);
     }
-    const rgh = tex.roughness(r.tex, r.roughBase, 0.35);
+    const rgh = tex.roughness(r.tex, r.roughBase, r.roughRange ?? 0.35);
     if (rgh) params.roughnessMap = rgh;
     if (r.transparent) {
       params.transparent = true;
@@ -130,12 +133,21 @@ export class MaterialLibrary {
         emissiveIntensity: 1,
       }));
     } else if (name === 'weapon_body') {
+      // Deliberately lighter than any world surface. The viewmodel is on screen
+      // for the whole game against floors, crates and night sky in turn, and at
+      // the original 0x4a5158 it disappeared into every one of them.
       m = this._track(new THREE.MeshStandardMaterial({
-        color: 0x4a5158, roughness: 0.62, metalness: 0.35,
+        color: 0x8b959f, roughness: 0.42, metalness: 0.58,
       }));
     } else if (name === 'weapon_dark') {
       m = this._track(new THREE.MeshStandardMaterial({
-        color: 0x262c33, roughness: 0.7, metalness: 0.3,
+        color: 0x4d565f, roughness: 0.8, metalness: 0.16,
+      }));
+    } else if (name === 'weapon_glove') {
+      // The player's hands. Separate from `enemy_body` so the two silhouettes
+      // can be tuned independently — they are read for opposite reasons.
+      m = this._track(new THREE.MeshStandardMaterial({
+        color: 0x3d4753, roughness: 0.9, metalness: 0.04,
       }));
     } else if (name === 'decal_bullet') {
       m = this._track(this._decalMaterial());

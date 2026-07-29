@@ -67,6 +67,9 @@ npm run test:e2e   # Playwright: boot, real playthrough, HUD and accessibility c
 npm run capture    # screenshot every mission beat into artifacts/screenshots/
 npm run profile    # performance + 3-minute memory soak into artifacts/perf/
 npm run verify     # test + build + e2e — the gate for "done"
+npm run rubric     # score QUALITY_RUBRIC.md against artifacts/ on disk
+npm run record:build # record install/build facts into artifacts/logs/build.json
+npm run evidence   # the whole evidence chain, in order
 ```
 
 ---
