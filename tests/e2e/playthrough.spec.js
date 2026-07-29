@@ -681,7 +681,13 @@ test('the full mission is playable from the menu to the results screen', async (
   await page.screenshot({ path: `${SHOTS}/run-04-helipad.png` });
 
   // Beat 5: hold for extraction, fighting the three waves.
-  deaths += await holdAndFight(page, { budgetMs: 300_000 });
+  // 480 s, not the 300 s this used to carry. The number is sized from measurement
+  // rather than picked: the hold isolated at checkpoint 4, with the loop frozen so
+  // it is deterministic, costs 121.5 s and five deaths to win *from full health*.
+  // Test 14 arrives here damaged from the withdrawal, so 300 s left almost no
+  // headroom and the run failed roughly one time in six. Widening the budget does
+  // not make the beat easier — it stops the harness from calling a slow win a loss.
+  deaths += await holdAndFight(page, { budgetMs: 480_000 });
   s = await state(page);
   expect(s.objectives[4].state, 'objective 5 (hold) did not complete').toBe('done');
   expect(s.finished).toBe(true);

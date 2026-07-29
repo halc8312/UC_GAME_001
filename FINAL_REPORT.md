@@ -672,6 +672,18 @@ Stated plainly, not buried.
   2 kills, because the pump-hall and server-room firefights were skipped over rather
   than fought. `tests/e2e/playthrough.spec.js:594` is the whole test; the
   `teleport()` calls are on lines 632, 648, 659 and 673.
+- **The extraction hold is knife-edge, and test 14 was flaky because of it.**
+  Measured, not estimated: the hold isolated at checkpoint 4 with the loop frozen
+  (so it is deterministic) costs **five deaths and 121.5 s to win from full
+  health**, ending at 42 HP with six kills. Test 14 enters it already damaged from
+  the withdrawal, and against the 300 s budget it used to carry, the run failed
+  about one time in six — observed across six full runs: v6 pass (7 deaths,
+  154 s), v7 pass (0 deaths, 103.7 s), v8 pass, v9 **fail**, then two further
+  passes. The budget is now 480 s, sized from that measurement. That is a harness
+  change, not a difficulty change; the encounter is untouched. Both numbers are
+  worth stating plainly: the mission *is* completable — five of six observed full
+  runs reached the results screen — and the final beat is hard enough that an
+  unskilled bot needs five attempts.
 - **The data-core hold is genuinely hard under fire.** Four seconds of held interact
   while contractors shoot is failable, and the e2e test needed a re-acquire-and-hold
   loop to complete it. That is the intended difficulty, but it is worth stating that

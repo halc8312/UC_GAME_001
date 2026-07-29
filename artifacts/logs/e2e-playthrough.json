@@ -20,10 +20,10 @@
       "phase": "alarm"
     },
     {
-      "at": 9.87,
+      "at": 59.6,
       "event": "objective_4_done",
       "phase": "extraction",
-      "deaths": 1
+      "deaths": 0
     },
     {
       "at": 45.17,
@@ -36,14 +36,14 @@
         "accuracy": 20.9,
         "kills": 5,
         "headshots": 0,
-        "damageTaken": 304,
-        "deaths": 2,
+        "damageTaken": 740,
+        "deaths": 5,
         "objectivesCompleted": 5,
         "objectivesTotal": 5,
         "score": 52,
         "grade": "C"
       },
-      "deaths": 2
+      "deaths": 5
     }
   ],
   "result": {
@@ -54,16 +54,16 @@
     "accuracy": 20.9,
     "kills": 5,
     "headshots": 0,
-    "damageTaken": 304,
-    "deaths": 2,
+    "damageTaken": 740,
+    "deaths": 5,
     "objectivesCompleted": 5,
     "objectivesTotal": 5,
     "score": 52,
     "grade": "C"
   },
-  "deathsDuringRun": 2,
+  "deathsDuringRun": 5,
   "playedWithoutDebugKills": true,
-  "audioEventCount": 1445,
+  "audioEventCount": 2000,
   "distinctSounds": [
     "alarm_siren",
     "ambient_hum",
@@ -80,12 +80,12 @@
     "hitmarker",
     "impact_concrete",
     "impact_flesh",
+    "impact_grate",
     "impact_metal",
     "interact_complete",
     "interact_start",
     "land",
     "mission_fail",
-    "mission_success",
     "objective_complete",
     "player_death",
     "player_hurt",
