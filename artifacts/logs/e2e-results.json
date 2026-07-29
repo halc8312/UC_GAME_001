@@ -84,12 +84,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 7223,
+                  "duration": 6181,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:44:41.761Z",
+                  "startTime": "2026-07-29T15:46:03.279Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -118,12 +118,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4051,
+                  "duration": 3628,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:44:49.116Z",
+                  "startTime": "2026-07-29T15:46:09.585Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -152,12 +152,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 37951,
+                  "duration": 36851,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:44:53.192Z",
+                  "startTime": "2026-07-29T15:46:13.238Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -186,12 +186,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 17040,
+                  "duration": 15092,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:45:31.161Z",
+                  "startTime": "2026-07-29T15:46:50.104Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -220,12 +220,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 56203,
+                  "duration": 46299,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:45:48.221Z",
+                  "startTime": "2026-07-29T15:47:05.213Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -254,12 +254,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 44984,
+                  "duration": 37292,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:46:44.437Z",
+                  "startTime": "2026-07-29T15:47:51.527Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -297,12 +297,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 142485,
+                  "duration": 130907,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:47:29.435Z",
+                  "startTime": "2026-07-29T15:48:28.831Z",
                   "annotations": [
                     {
                       "type": "slow",
@@ -340,12 +340,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 84143,
+                  "duration": 65780,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:49:51.937Z",
+                  "startTime": "2026-07-29T15:50:39.749Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -374,12 +374,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 23951,
+                  "duration": 21634,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:51:16.094Z",
+                  "startTime": "2026-07-29T15:51:45.543Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -417,12 +417,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 235174,
+                  "duration": 195343,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:51:40.060Z",
+                  "startTime": "2026-07-29T15:52:07.191Z",
                   "annotations": [
                     {
                       "type": "slow",
@@ -460,12 +460,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 23052,
+                  "duration": 23395,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:55:35.247Z",
+                  "startTime": "2026-07-29T15:55:22.548Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -494,12 +494,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 58989,
+                  "duration": 52557,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:55:58.314Z",
+                  "startTime": "2026-07-29T15:55:45.959Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -528,12 +528,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 34274,
+                  "duration": 29959,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:56:57.317Z",
+                  "startTime": "2026-07-29T15:56:38.527Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -548,7 +548,7 @@
         },
         {
           "title": "the full mission is playable from the menu to the results screen",
-          "ok": true,
+          "ok": false,
           "tags": [],
           "tests": [
             {
@@ -561,18 +561,48 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "passed",
-                  "duration": 355739,
-                  "errors": [],
+                  "status": "failed",
+                  "duration": 472915,
+                  "error": {
+                    "message": "Error: objective 5 (hold) did not complete\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mdon\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mactiv\u001b[27me\"\u001b[39m",
+                    "stack": "Error: objective 5 (hold) did not complete\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mdon\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mactiv\u001b[27me\"\u001b[39m\n    at /home/user/UC_GAME_001/tests/e2e/playthrough.spec.js:686:72",
+                    "location": {
+                      "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                      "column": 72,
+                      "line": 686
+                    },
+                    "snippet": "  684 |   deaths += await holdAndFight(page, { budgetMs: 300_000 });\n  685 |   s = await state(page);\n> 686 |   expect(s.objectives[4].state, 'objective 5 (hold) did not complete').toBe('done');\n      |                                                                        ^\n  687 |   expect(s.finished).toBe(true);\n  688 |   expect(s.result.success).toBe(true);\n  689 |   timeline.push({ at: s.missionTime, event: 'mission_complete', result: s.result, deaths });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                        "column": 72,
+                        "line": 686
+                      },
+                      "message": "Error: objective 5 (hold) did not complete\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m\"\u001b[7mdon\u001b[27me\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mactiv\u001b[27me\"\u001b[39m\n\n  684 |   deaths += await holdAndFight(page, { budgetMs: 300_000 });\n  685 |   s = await state(page);\n> 686 |   expect(s.objectives[4].state, 'objective 5 (hold) did not complete').toBe('done');\n      |                                                                        ^\n  687 |   expect(s.finished).toBe(true);\n  688 |   expect(s.result.success).toBe(true);\n  689 |   timeline.push({ at: s.missionTime, event: 'mission_complete', result: s.result, deaths });\n    at /home/user/UC_GAME_001/tests/e2e/playthrough.spec.js:686:72"
+                    }
+                  ],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T07:57:31.603Z",
+                  "startTime": "2026-07-29T15:57:08.502Z",
                   "annotations": [],
-                  "attachments": []
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/user/UC_GAME_001/test-results/playthrough-the-full-missi-e5664--menu-to-the-results-screen/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                    "column": 72,
+                    "line": 686
+                  }
                 }
               ],
-              "status": "expected"
+              "status": "unexpected"
             }
           ],
           "id": "01fd090c45aab873a932-d7429f60876d07a004cb",
@@ -593,15 +623,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 111920,
+                  "duration": 99088,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T08:03:27.356Z",
+                  "startTime": "2026-07-29T16:05:02.545Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -627,15 +657,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 59924,
+                  "duration": 51286,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T08:05:19.293Z",
+                  "startTime": "2026-07-29T16:06:41.773Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -661,15 +691,15 @@
               "projectName": "",
               "results": [
                 {
-                  "workerIndex": 0,
+                  "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 33230,
+                  "duration": 26674,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-07-29T08:06:19.232Z",
+                  "startTime": "2026-07-29T16:07:33.077Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -681,17 +711,103 @@
           "file": "playthrough.spec.js",
           "line": 791,
           "column": 1
+        },
+        {
+          "title": "a real mouse and keyboard drive the game, not just the synthetic input path",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 540000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                    "line": 839,
+                    "column": 8
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 46458,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T16:07:59.765Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                        "line": 839,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "01fd090c45aab873a932-5ae6a60adba6c01884a8",
+          "file": "playthrough.spec.js",
+          "line": 838,
+          "column": 1
+        },
+        {
+          "title": "the build reports which WebGL renderer it is running on",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7284,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T16:08:46.234Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "01fd090c45aab873a932-380aaf6e7a4c0cbd4000",
+          "file": "playthrough.spec.js",
+          "line": 913,
+          "column": 1
         }
       ]
     }
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-29T07:44:40.987Z",
-    "duration": 1331584.8609999998,
-    "expected": 17,
+    "startTime": "2026-07-29T15:46:00.565Z",
+    "duration": 1373048.404,
+    "expected": 18,
     "skipped": 0,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }
