@@ -2,7 +2,7 @@
   "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
   "vendor": "Google Inc. (Google)",
   "software": true,
-  "short": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Devic",
+  "short": "SwiftShader Device (Subzero)",
   "maxTextureSize": 8192,
   "pixelRatio": 1
 }

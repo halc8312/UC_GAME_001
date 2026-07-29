@@ -1,5 +1,60 @@
 import * as THREE from 'three';
 
+/**
+ * Reduce an `UNMASKED_RENDERER_WEBGL` string to the adapter name.
+ *
+ * Chromium wraps everything in ANGLE, so the raw string is 60–110 characters of
+ * which about twenty are the part a player recognises:
+ *
+ *   ANGLE (NVIDIA, NVIDIA GeForce RTX 4070 Direct3D11 vs_5_0 ps_5_0, D3D11)
+ *   ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)
+ *
+ * The middle field is the adapter, but it is nested and comma-bearing, so it has
+ * to be split at paren depth zero rather than with a plain `split(',')`. Exported
+ * because it is pure and the interesting cases are strings from hardware this
+ * container does not have — see tests/unit/renderer.test.js.
+ */
+export function shortRendererName(raw) {
+  const s = String(raw ?? '').trim();
+  if (!s) return 'unknown';
+
+  let body = s;
+  const angle = s.match(/^ANGLE\s*\((.*)\)$/s);
+  if (angle) {
+    const fields = [];
+    let depth = 0;
+    let start = 0;
+    for (let i = 0; i < angle[1].length; i++) {
+      const ch = angle[1][i];
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+      else if (ch === ',' && depth === 0) {
+        fields.push(angle[1].slice(start, i).trim());
+        start = i + 1;
+      }
+    }
+    fields.push(angle[1].slice(start).trim());
+    // [vendor, adapter, backend] for the three-field form; a two-field string
+    // (some Linux builds) puts the adapter second as well. Anything shorter is
+    // already the adapter.
+    body = fields.length >= 2 ? fields[1] : fields[0];
+  }
+
+  // Unwrap an API-version prefix: "Vulkan 1.3.0 (SwiftShader Device (Subzero))".
+  const api = body.match(/^(?:Vulkan|OpenGL(?:\s+ES)?|Metal|D3D\d*)[\d\s.]*\((.*)\)$/s);
+  if (api) body = api[1].trim();
+
+  return body
+    .replace(/\s*\(0x[0-9a-f]+\)/gi, '')        // PCI/device ids
+    // Trailing API noise: "… Direct3D11 vs_5_0 ps_5_0" on Windows, "… OpenGL
+    // Engine" on macOS. Only stripped when it runs to the end of the string, so
+    // "ANGLE Metal Renderer: Apple M2 Pro" keeps its adapter.
+    .replace(/\s+(?:Direct3D|OpenGL|Vulkan|Metal)\S*(?:\s+(?:Engine|[vp]s_[\d_]+))*\s*$/i, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+    .slice(0, 46) || s.slice(0, 46);
+}
+
 // Alarm blend targets, hoisted: setAlarmLighting runs every frame and must not
 // allocate five Colors per call.
 const FOG_CALM = new THREE.Color(0x4a5c70);
@@ -237,12 +292,7 @@ export class RenderStack {
       renderer,
       vendor,
       software,
-      // A short label for the overlay: the useful part of an ANGLE string is the
-      // adapter inside the parentheses, not the 90-character wrapper.
-      short: (renderer.match(/\(([^,()]+(?:\([^()]*\))?[^,()]*)\)\s*$/)?.[1] ?? renderer)
-        .replace(/\s*(Direct3D|OpenGL|Vulkan|Metal)[^)]*$/i, '')
-        .trim()
-        .slice(0, 46) || renderer.slice(0, 46),
+      short: shortRendererName(renderer),
       maxTextureSize: (() => {
         try {
           const gl = this.renderer.getContext();

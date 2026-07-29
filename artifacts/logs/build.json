@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T08:07:01.495Z",
+  "generatedAt": "2026-07-29T23:02:52.446Z",
   "node": "v22.22.2",
   "installVulnerabilities": 0,
   "buildOk": true,
@@ -12,33 +12,33 @@
     "rendering chunks...",
     "computing gzip size...",
     "dist/index.html                  11.02 kB │ gzip:   2.66 kB",
-    "dist/assets/index-CcEczTcW.css   17.83 kB │ gzip:   4.71 kB",
-    "dist/assets/index-DzwrDepE.js   207.67 kB │ gzip:  65.62 kB │ map:   713.08 kB",
+    "dist/assets/index-jfYKWXdC.css   17.85 kB │ gzip:   4.71 kB",
+    "dist/assets/index-DmkHvtLS.js   209.29 kB │ gzip:  66.41 kB │ map:   720.59 kB",
     "dist/assets/three-C6O9aOTb.js   728.50 kB │ gzip: 185.62 kB │ map: 2,995.52 kB",
     "",
-    "✓ built in 411ms"
+    "✓ built in 486ms"
   ],
-  "appGzipKB": 70.7,
+  "appGzipKB": 71.5,
   "threeGzipKB": 180,
-  "totalGzipKB": 250.7,
+  "totalGzipKB": 251.4,
   "distFiles": [
-    "index-CcEczTcW.css",
-    "index-DzwrDepE.js",
-    "index-DzwrDepE.js.map",
+    "index-DmkHvtLS.js",
+    "index-DmkHvtLS.js.map",
+    "index-jfYKWXdC.css",
     "three-C6O9aOTb.js",
     "three-C6O9aOTb.js.map"
   ],
   "detail": [
     {
-      "file": "index-CcEczTcW.css",
-      "rawKB": 17.4,
-      "gzipKB": 4.6,
+      "file": "index-DmkHvtLS.js",
+      "rawKB": 204.4,
+      "gzipKB": 64.3,
       "isThree": false
     },
     {
-      "file": "index-DzwrDepE.js",
-      "rawKB": 202.8,
-      "gzipKB": 63.5,
+      "file": "index-jfYKWXdC.css",
+      "rawKB": 17.4,
+      "gzipKB": 4.6,
       "isThree": false
     },
     {

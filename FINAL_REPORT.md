@@ -55,11 +55,11 @@ npm run rubric           # scores the rubric against what is on disk
 $ npm run record:build
 build ok: true
 vulnerabilities: 0
-app gzip: 70.7 kB (three: 180 kB, total 250.7 kB)
+app gzip: 71.5 kB (three: 180 kB, total 251.4 kB)
 asset files checked in: 0
 ```
 
-The app bundle is 70.7 kB gzipped against a 220 kB budget. Three.js is 180 kB on top
+The app bundle is 71.5 kB gzipped against a 220 kB budget. Three.js is 180 kB on top
 of that and is excluded by the budget's own terms. `asset files checked in: 0` is a
 scan of the whole working tree for `.png/.jpg/.mp3/.ogg/.wav/.glb/.gltf/.fbx` — the
 "no authored assets" claim is enforced, not asserted.
@@ -68,15 +68,15 @@ scan of the whole working tree for `.png/.jpg/.mp3/.ogg/.wav/.glb/.gltf/.fbx` �
 
 ```
 $ npm run test
-Test Files  10 passed (10)
-     Tests  735 passed (735)
+Test Files  12 passed (12)
+     Tests  769 passed (769)
 ```
 
-`artifacts/logs/unit-tests.json`: `numPassedTests 735 · numTotalTests 735 ·
+`artifacts/logs/unit-tests.json`: `numPassedTests 769 · numTotalTests 769 ·
 numFailedTests 0 · success true`.
 
-735 tests across `core`, `collision`, `combat`, `ballistics`, `level`, `mission`,
-`ai`, `audio`, `textures` and `hygiene`. The hygiene suite is the one that matters
+769 tests across `core`, `input`, `collision`, `combat`, `ballistics`, `level`,
+`mission`, `ai`, `audio`, `textures`, `renderer` and `hygiene`. The hygiene suite is the one that matters
 for the rubric's determinism and leak criteria: it fails the build on any
 `Math.random()` under `src/core/**` or `src/game/**`, and on any GPU-resource owner
 that does not expose `dispose()`.
@@ -85,7 +85,7 @@ that does not expose `dispose()`.
 
 ```
 $ cat artifacts/logs/e2e-console.json
-{ "bootMs": 3827, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
+{ "bootMs": 2998, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
   ReadPixels" ], "failedRequests": [], "externalRequests": [], "runtimeErrors": [] }
 ```
 
@@ -98,33 +98,39 @@ produced by the game.
 
 ```
 $ npm run test:e2e
-Running 17 tests using 1 worker
-  ✓   1 boots clean with no console errors and no external requests (7.2s)
-  ✓   2 reaches interactive quickly (4.1s)
-  ✓   3 menu, briefing and deploy form a path into the mission (38.0s)
-  ✓   4 the controls screen documents every bound key (17.0s)
-  ✓   5 movement obeys the spec speeds and gravity (56.4s)
-  ✓   6 mouselook clamps pitch and leaves yaw free (58.6s)
-  ✓   7 the player never leaves the world when walking the whole route (2.5m)
-  ✓   8 both weapons fire, reload, run dry and switch (81.9s)
-  ✓   9 aiming down sights tightens spread and slows the player (24.2s)
-  ✓  10 enemies perceive, path, fight and die — the FSM traverses every state (3.8m)
-  ✓  11 enemies damage the player and the player can die and retry (25.9s)
-  ✓  12 pause suspends the simulation and resumes cleanly (63.8s)
-  ✓  13 settings change behaviour and survive a reload (34.3s)
-  ✓  14 the full mission is playable from the menu to the results screen (5.9m)
-  ✓  15 the HUD is readable at 1280x720 and 1920x1080 without overlap (1.9m)
-  ✓  16 reduced-flash mode suppresses the alarm strobe and screen shake (59.9s)
-  ✓  17 a seeded run is reproducible (33.2s)
+Running 19 tests using 1 worker
+  ✓   1 boots clean with no console errors and no external requests (6.0s)
+  ✓   2 reaches interactive quickly (3.5s)
+  ✓   3 menu, briefing and deploy form a path into the mission (33.6s)
+  ✓   4 the controls screen documents every bound key (13.9s)
+  ✓   5 movement obeys the spec speeds and gravity (47.7s)
+  ✓   6 mouselook clamps pitch and leaves yaw free (36.5s)
+  ✓   7 the player never leaves the world when walking the whole route (1.8m)
+  ✓   8 both weapons fire, reload, run dry and switch (1.1m)
+  ✓   9 aiming down sights tightens spread and slows the player (20.9s)
+  ✓  10 enemies perceive, path, fight and die — the FSM traverses every state (3.1m)
+  ✓  11 enemies damage the player and the player can die and retry (23.9s)
+  ✓  12 pause suspends the simulation and resumes cleanly (51.7s)
+  ✓  13 settings change behaviour and survive a reload (30.6s)
+  ✓  14 the full mission is playable from the menu to the results screen (4.2m)
+  ✓  15 the HUD is readable at 1280x720 and 1920x1080 without overlap (1.6m)
+  ✓  16 reduced-flash mode suppresses the alarm strobe and screen shake (52.1s)
+  ✓  17 a seeded run is reproducible (27.1s)
+  ✓  18 a real mouse and keyboard drive the game, not just the synthetic input path (44.5s)
+  ✓  19 the build reports which WebGL renderer it is running on (7.3s)
 
-  17 passed (22.2m)
+  19 passed (18.5m)
 ```
 
-`artifacts/logs/e2e-results.json` records `expected 17 · unexpected 0 · skipped 0 ·
-flaky 0`. Twenty-two minutes for seventeen tests is a software-rasteriser cost, not a
+`artifacts/logs/e2e-results.json` records `expected 19 · unexpected 0 · skipped 0 ·
+flaky 0`. Eighteen minutes for nineteen tests is a software-rasteriser cost, not a
 hang: tests 7, 10 and 14 walk and fight through the real level a browser round-trip
 at a time. (The suite ran 26.5 m before the draw-call work in §5.9 and 22.2 m after
-it — the same 17 tests, four minutes cheaper.)
+it, on 17 tests; tests 18 and 19 were added with the input fix in §5.10.)
+
+The run immediately before this one failed test 14 — the extraction hold ran out of
+its budget. That failure, what it turned out to be, and why the budget moved are in
+§9; it is recorded here rather than quietly overwritten by the green run.
 
 ### 3.5 The playthrough itself
 
@@ -133,24 +139,26 @@ simulation reported, not what the harness hoped for
 (`artifacts/logs/e2e-playthrough.json`):
 
 ```json
-{ "success": true, "timeSeconds": 45, "shotsFired": 148, "shotsHit": 31,
-  "accuracy": 20.9, "kills": 5, "headshots": 0, "damageTaken": 304, "deaths": 2,
-  "objectivesCompleted": 5, "objectivesTotal": 5, "score": 52, "grade": "C" }
+{ "success": true, "timeSeconds": 85.4, "shotsFired": 15, "shotsHit": 11,
+  "accuracy": 73.3, "kills": 2, "headshots": 0, "damageTaken": 124, "deaths": 0,
+  "objectivesCompleted": 5, "objectivesTotal": 5, "score": 74.4, "grade": "A" }
 ```
 
 Every row on the results screen is asserted against `__UC.state().result`, so the
-screen cannot drift from the tally. 1,445 audio events fired across 31 distinct
-sounds — `rifle_fire`, `shotgun_fire`, `enemy_fire`, `impact_flesh`, `hitmarker`,
-`footstep_grate`, `alarm_siren`, `breaker_pull`, `objective_complete`,
-`mission_success` among them. Two deaths on the extraction hold, both retried from
-the checkpoint, then a clean finish.
+screen cannot drift from the tally. 336 audio events fired across 27 distinct
+sounds — `rifle_fire`, `enemy_fire`, `impact_flesh`, `hitmarker`, `footstep_grate`,
+`alarm_siren`, `breaker_pull`, `objective_complete`, `mission_success` among them.
 
-The run is not deterministic between sessions — the harness plays live against a
-seeded but reactive simulation — and the tally moves accordingly. An earlier run of
-the same test finished in 103.7 s with 16 shots, 2 kills, 0 deaths and grade A; this
-one took 148 shots and died twice. Both are recorded rather than the flattering one
-being kept. See §9 for what the test does *not* do: it teleports between the first
-three beat anchors.
+**The run is not deterministic between sessions** — the harness plays live against a
+seeded but reactive simulation — and the tally moves a long way. Four recorded runs
+of the same test: 45 s / 148 shots / 5 kills / 2 deaths / grade C; 103.7 s / 16
+shots / 2 kills / 0 deaths / grade A; the run above; and one that failed outright.
+All four are recorded rather than the flattering one being kept. The spread is
+mostly the extraction hold (§9), and partly that a run which skirts the pump hall
+fires fifteen rounds while one that gets caught fires a hundred and fifty.
+
+See §9 for what the test does *not* do: it teleports between the first three beat
+anchors.
 
 The AI trace from test 10 (`artifacts/logs/e2e-ai-trace.json`) shows the full FSM
 cycle on real contractors:
@@ -502,7 +510,7 @@ mag after left-mouse held 700ms: 28
 fov hip -> ads -> released: 78.0 55.5 77.2
 ```
 
-**Why 757 unit tests and 17 e2e tests all missed it.** Every automated test drives
+**Why 735 unit tests and 17 e2e tests all missed it.** Every automated test drives
 the game through `__UC.input()`, which installs a synthetic command frame — and
 `buildCommand()` returns from the synthetic branch *before* it reads `this.mouse`
 at all. The keyboard, mouse and wheel listeners were therefore unreachable from the
@@ -718,9 +726,9 @@ PASS 52 · FAIL 0 · NO EVIDENCE 0 (of 52)
 |---|---|---|---|
 | A1 | `npm install` clean | **PASS** | 0 vulnerabilities |
 | A2 | production build succeeds | **PASS** | 5 files emitted to `dist/` |
-| A3 | app bundle gzip ≤ 220 kB (excl. three) | **PASS** | 70.7 kB |
-| A4 | unit suite green, ≥ 90 tests | **PASS** | 735/735 |
-| A5 | e2e suite green | **PASS** | 17 passed, 0 failed, 0 skipped |
+| A3 | app bundle gzip ≤ 220 kB (excl. three) | **PASS** | 71.5 kB |
+| A4 | unit suite green, ≥ 90 tests | **PASS** | 769/769 |
+| A5 | e2e suite green | **PASS** | 19 passed, 0 failed, 0 skipped |
 | A6 | zero uncaught console errors | **PASS** | 0 console, 0 runtime |
 | A7 | zero failed / external requests | **PASS** | 0 failed, 0 external |
 | A8 | no `Math.random()` in simulation code | **PASS** | enforced by `hygiene.test.js` |
