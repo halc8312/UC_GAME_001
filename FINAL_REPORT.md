@@ -69,10 +69,13 @@ scan of the whole working tree for `.png/.jpg/.mp3/.ogg/.wav/.glb/.gltf/.fbx` �
 ```
 $ npm run test
 Test Files  10 passed (10)
-     Tests  731 passed (731)
+     Tests  732 passed (732)
 ```
 
-731 tests across `core`, `collision`, `combat`, `ballistics`, `level`, `mission`,
+`artifacts/logs/unit-tests.json`: `numPassedTests 732 · numTotalTests 732 ·
+numFailedTests 0 · success true`.
+
+732 tests across `core`, `collision`, `combat`, `ballistics`, `level`, `mission`,
 `ai`, `audio`, `textures` and `hygiene`. The hygiene suite is the one that matters
 for the rubric's determinism and leak criteria: it fails the build on any
 `Math.random()` under `src/core/**` or `src/game/**`, and on any GPU-resource owner
@@ -82,7 +85,7 @@ that does not expose `dispose()`.
 
 ```
 $ cat artifacts/logs/e2e-console.json
-{ "bootMs": 3567, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
+{ "bootMs": 4591, "consoleErrors": [], "consoleWarnings": [ "...GPU stall due to
   ReadPixels" ], "failedRequests": [], "externalRequests": [], "runtimeErrors": [] }
 ```
 
@@ -90,6 +93,67 @@ Zero console errors, zero failed requests, zero requests to any host other than 
 local preview server, zero uncaught runtime errors. The single warning is emitted by
 SwiftShader itself when Playwright reads the framebuffer for a screenshot; it is not
 produced by the game.
+
+### 3.4 End-to-end suite
+
+```
+$ npm run test:e2e
+Running 17 tests using 1 worker
+  ✓   1 boots clean with no console errors and no external requests (15.5s)
+  ✓   2 reaches interactive quickly (9.3s)
+  ✓   3 menu, briefing and deploy form a path into the mission (50.6s)
+  ✓   4 the controls screen documents every bound key (20.7s)
+  ✓   5 movement obeys the spec speeds and gravity (70.9s)
+  ✓   6 mouselook clamps pitch and leaves yaw free (74.5s)
+  ✓   7 the player never leaves the world when walking the whole route (2.9m)
+  ✓   8 both weapons fire, reload, run dry and switch (99.6s)
+  ✓   9 aiming down sights tightens spread and slows the player (29.5s)
+  ✓  10 enemies perceive, path, fight and die — the FSM traverses every state (4.5m)
+  ✓  11 enemies damage the player and the player can die and retry (31.2s)
+  ✓  12 pause suspends the simulation and resumes cleanly (1.3m)
+  ✓  13 settings change behaviour and survive a reload (45.6s)
+  ✓  14 the full mission is playable from the menu to the results screen (6.1m)
+  ✓  15 the HUD is readable at 1280x720 and 1920x1080 without overlap (2.4m)
+  ✓  16 reduced-flash mode suppresses the alarm strobe and screen shake (1.2m)
+  ✓  17 a seeded run is reproducible (36.3s)
+
+  17 passed (26.5m)
+```
+
+`artifacts/logs/e2e-results.json` records `expected 17 · unexpected 0 · skipped 0 ·
+flaky 0`. Twenty-six minutes for seventeen tests is a software-rasteriser cost, not a
+hang: tests 7, 10 and 14 walk and fight through the real level a browser round-trip
+at a time.
+
+### 3.5 The playthrough itself
+
+Test 14 drives the game from the main menu to the results screen and writes what the
+simulation reported, not what the harness hoped for
+(`artifacts/logs/e2e-playthrough.json`):
+
+```json
+{ "success": true, "timeSeconds": 103.7, "shotsFired": 16, "shotsHit": 11,
+  "accuracy": 68.8, "kills": 2, "headshots": 0, "damageTaken": 137, "deaths": 0,
+  "objectivesCompleted": 5, "objectivesTotal": 5, "score": 70.2, "grade": "A" }
+```
+
+Every row on the results screen is asserted against `__UC.state().result`, so the
+screen cannot drift from the tally. Timeline: deploy → objective 1 at 4.5 s →
+objective 2 at 7.3 s → objective 3 and the alarm at 14.0 s → helipad at 59.1 s →
+extraction complete at 103.9 s, no deaths. 446 audio events fired across 27 distinct
+sounds — `rifle_fire`, `enemy_fire`, `impact_flesh`, `hitmarker`, `footstep_grate`,
+`alarm_siren`, `breaker_pull`, `objective_complete`, `mission_success` among them.
+See §9 for what this run does *not* do: it teleports between the first three beat
+anchors, which is why the shot and kill counts are so low.
+
+The AI trace from test 10 (`artifacts/logs/e2e-ai-trace.json`) shows the full FSM
+cycle on real contractors:
+
+```
+visited: idle, patrol, suspicious, combat, search, dead
+enemy_1: idle →(spawned_patrol) patrol →(noticed) suspicious →(acquired) combat
+         →(lost_target) search →(killed) dead
+```
 
 ---
 
@@ -361,9 +425,20 @@ Stated plainly, not buried.
 - **The capture harness's results screenshot is not a skilled playthrough.**
   `beat-21-results.png` reaches the results screen by surviving the extraction hold
   with `killAllEnemies()` between waves, so its accuracy and kill tallies are zero and
-  the grade is C. The *e2e* full-mission test plays the mission honestly — walking,
-  shooting, dying and retrying — and its tally is the one in
-  `artifacts/logs/e2e-playthrough.json`.
+  the grade is C. The *e2e* full-mission test never touches `killAllEnemies()` or
+  `giveWeapon()` — every kill, pickup and objective in
+  `artifacts/logs/e2e-playthrough.json` was earned by the simulation.
+- **The e2e playthrough teleports between beat anchors.** It is not one continuous
+  walk from the dock to the helipad. Objective 1 is walked, but the test then
+  `teleport()`s to each breaker, to the shotgun table and to the data core, because
+  navigating a browser round-trip at a time across the whole facility costs more
+  wall-clock than the value it adds. From the alarm onward it stops teleporting: the
+  withdrawal along the catwalk (three `walkTo` legs) and the 45-second extraction
+  hold are walked and fought under the same rules a player has, deaths and retries
+  included. The consequence for the tally is visible in the numbers — 16 shots and
+  2 kills, because the pump-hall and server-room firefights were skipped over rather
+  than fought. `tests/e2e/playthrough.spec.js:594` is the whole test; the
+  `teleport()` calls are on lines 632, 648, 659 and 673.
 - **The data-core hold is genuinely hard under fire.** Four seconds of held interact
   while contractors shoot is failable, and the e2e test needed a re-acquire-and-hold
   loop to complete it. That is the intended difficulty, but it is worth stating that

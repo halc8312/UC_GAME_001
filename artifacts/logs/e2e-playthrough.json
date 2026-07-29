@@ -1,0 +1,99 @@
+{
+  "timeline": [
+    {
+      "at": 0,
+      "event": "deployed"
+    },
+    {
+      "at": 4.47,
+      "event": "objective_1_done",
+      "phase": "pump_hall"
+    },
+    {
+      "at": 7.25,
+      "event": "objective_2_done",
+      "phase": "server_room"
+    },
+    {
+      "at": 13.97,
+      "event": "objective_3_done_alarm",
+      "phase": "alarm"
+    },
+    {
+      "at": 59.07,
+      "event": "objective_4_done",
+      "phase": "extraction",
+      "deaths": 0
+    },
+    {
+      "at": 103.88,
+      "event": "mission_complete",
+      "result": {
+        "success": true,
+        "timeSeconds": 103.7,
+        "shotsFired": 16,
+        "shotsHit": 11,
+        "accuracy": 68.8,
+        "kills": 2,
+        "headshots": 0,
+        "damageTaken": 137,
+        "deaths": 0,
+        "objectivesCompleted": 5,
+        "objectivesTotal": 5,
+        "score": 70.2,
+        "grade": "A"
+      },
+      "deaths": 0
+    }
+  ],
+  "result": {
+    "success": true,
+    "timeSeconds": 103.7,
+    "shotsFired": 16,
+    "shotsHit": 11,
+    "accuracy": 68.8,
+    "kills": 2,
+    "headshots": 0,
+    "damageTaken": 137,
+    "deaths": 0,
+    "objectivesCompleted": 5,
+    "objectivesTotal": 5,
+    "score": 70.2,
+    "grade": "A"
+  },
+  "deathsDuringRun": 0,
+  "playedWithoutDebugKills": true,
+  "audioEventCount": 446,
+  "distinctSounds": [
+    "alarm_siren",
+    "ambient_hum",
+    "ambient_sea",
+    "breaker_pull",
+    "checkpoint",
+    "enemy_alert",
+    "enemy_death",
+    "enemy_fire",
+    "enemy_hurt",
+    "footstep_concrete",
+    "footstep_grate",
+    "footstep_metal",
+    "hitmarker",
+    "impact_concrete",
+    "impact_flesh",
+    "impact_metal",
+    "interact_complete",
+    "interact_start",
+    "land",
+    "mission_success",
+    "objective_complete",
+    "player_hurt",
+    "powerdown",
+    "rifle_fire",
+    "ui_click",
+    "ui_hover",
+    "weapon_switch"
+  ],
+  "consoleErrors": [],
+  "externalRequests": [],
+  "runtimeErrors": []
+}

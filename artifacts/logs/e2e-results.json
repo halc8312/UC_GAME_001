@@ -10,7 +10,9 @@
     "grep": {},
     "grepInvert": null,
     "maxFailures": 0,
-    "metadata": {},
+    "metadata": {
+      "actualWorkers": 1
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -34,7 +36,9 @@
         "outputDir": "/home/user/UC_GAME_001/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 1
+        },
         "id": "",
         "name": "",
         "testDir": "/home/user/UC_GAME_001/tests/e2e",
@@ -75,13 +79,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15512,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:14:09.094Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-dd105d66b3035830072d",
           "file": "playthrough.spec.js",
-          "line": 218,
+          "line": 276,
           "column": 1
         },
         {
@@ -95,13 +113,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:14:24.767Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-fbbf5bd43b1388faaa6a",
           "file": "playthrough.spec.js",
-          "line": 239,
+          "line": 297,
           "column": 1
         },
         {
@@ -115,13 +147,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 50561,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:14:34.088Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-bb4a7c2f5809e3fa7693",
           "file": "playthrough.spec.js",
-          "line": 245,
+          "line": 303,
           "column": 1
         },
         {
@@ -135,13 +181,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20696,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:15:24.664Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-8c06af1f310ec201838a",
           "file": "playthrough.spec.js",
-          "line": 261,
+          "line": 319,
           "column": 1
         },
         {
@@ -155,13 +215,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 70901,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:15:45.375Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-a3f87e7207d4a46a4782",
           "file": "playthrough.spec.js",
-          "line": 272,
+          "line": 330,
           "column": 1
         },
         {
@@ -175,13 +249,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 74490,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:16:56.296Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-a428d330da684aa28e60",
           "file": "playthrough.spec.js",
-          "line": 301,
+          "line": 359,
           "column": 1
         },
         {
@@ -190,18 +278,50 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 180000,
-              "annotations": [],
+              "timeout": 540000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                    "line": 374,
+                    "column": 8
+                  }
+                }
+              ],
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 171582,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:18:10.806Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                        "line": 374,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-c4b34bbb0096d7034afe",
           "file": "playthrough.spec.js",
-          "line": 312,
+          "line": 370,
           "column": 1
         },
         {
@@ -215,13 +335,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 99570,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:21:02.405Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-407c108ce50fd8addde6",
           "file": "playthrough.spec.js",
-          "line": 327,
+          "line": 389,
           "column": 1
         },
         {
@@ -235,13 +369,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 29518,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:22:41.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-b8406b180907e5a8f478",
           "file": "playthrough.spec.js",
-          "line": 375,
+          "line": 437,
           "column": 1
         },
         {
@@ -250,18 +398,50 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 180000,
-              "annotations": [],
+              "timeout": 540000,
+              "annotations": [
+                {
+                  "type": "slow",
+                  "location": {
+                    "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                    "line": 456,
+                    "column": 8
+                  }
+                }
+              ],
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 270465,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:23:11.529Z",
+                  "annotations": [
+                    {
+                      "type": "slow",
+                      "location": {
+                        "file": "/home/user/UC_GAME_001/tests/e2e/playthrough.spec.js",
+                        "line": 456,
+                        "column": 8
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-3a63ecbcf94a5ce97df0",
           "file": "playthrough.spec.js",
-          "line": 391,
+          "line": 453,
           "column": 1
         },
         {
@@ -275,13 +455,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31236,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:27:42.014Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-b058293b218b6ac7ad9f",
           "file": "playthrough.spec.js",
-          "line": 458,
+          "line": 520,
           "column": 1
         },
         {
@@ -295,13 +489,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 76345,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:28:13.268Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-92e39c85a7df5e0f7a07",
           "file": "playthrough.spec.js",
-          "line": 483,
+          "line": 545,
           "column": 1
         },
         {
@@ -315,13 +523,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 45630,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:29:29.626Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-3b0eb37ec7e7f17e2879",
           "file": "playthrough.spec.js",
-          "line": 502,
+          "line": 564,
           "column": 1
         },
         {
@@ -330,18 +552,32 @@
           "tags": [],
           "tests": [
             {
-              "timeout": 180000,
+              "timeout": 1800000,
               "annotations": [],
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 367623,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:30:15.271Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-d7429f60876d07a004cb",
           "file": "playthrough.spec.js",
-          "line": 532,
+          "line": 594,
           "column": 1
         },
         {
@@ -355,13 +591,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 143851,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:36:22.913Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-e515cc515dff1bf46a83",
           "file": "playthrough.spec.js",
-          "line": 669,
+          "line": 731,
           "column": 1
         },
         {
@@ -375,13 +625,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 72554,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:38:46.782Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-bbdd66603fa757f8026a",
           "file": "playthrough.spec.js",
-          "line": 710,
+          "line": 772,
           "column": 1
         },
         {
@@ -395,13 +659,27 @@
               "expectedStatus": "passed",
               "projectId": "",
               "projectName": "",
-              "results": [],
-              "status": "skipped"
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 36282,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-07-29T05:39:59.354Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
             }
           ],
           "id": "01fd090c45aab873a932-6ec7e64a718ffc97c0e0",
           "file": "playthrough.spec.js",
-          "line": 729,
+          "line": 791,
           "column": 1
         }
       ]
@@ -409,10 +687,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-07-29T04:47:23.931Z",
-    "duration": 343.78599999999994,
-    "expected": 0,
-    "skipped": 17,
+    "startTime": "2026-07-29T05:14:08.205Z",
+    "duration": 1587548.666,
+    "expected": 17,
+    "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   }

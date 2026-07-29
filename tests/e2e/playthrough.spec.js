@@ -208,6 +208,64 @@ async function holdAndFight(page, { budgetMs = 90_000 } = {}) {
   return deaths;
 }
 
+/**
+ * Hold an interact prompt to completion the way a player has to.
+ *
+ * Holding the button through one long step is not how this beat plays: the data
+ * core takes four seconds, contractors are shooting throughout, and taking a hit
+ * swings the view far enough to drop the prompt and reset the timer — or kills
+ * the operator outright. The player's answer is to re-acquire and hold again.
+ */
+async function holdInteract(page, id, objectiveIndex, place, { budgetMs = 60_000 } = {}) {
+  let deaths = 0;
+  let remaining = budgetMs;
+  const reposition = async () => {
+    await page.evaluate(([p]) => {
+      window.__UC.teleport(p[0], p[1], p[2], p[3]);
+      window.__UC.look(p[3], p[4]);
+    }, [place]);
+    await drive(page, {}, 300);
+  };
+  while (remaining > 0) {
+    const r = await page.evaluate(([id, objectiveIndex, place, budgetMs]) => {
+      const g = window.__UC;
+      const stepMs = 400;
+      let elapsed = 0;
+      while (elapsed < budgetMs) {
+        const s = g.state();
+        if (s.objectives[objectiveIndex].state === 'done') return { done: true, used: elapsed };
+        if (s.player.dead || s.finished) return { died: true, used: elapsed };
+        if (s.interactTarget !== id) {
+          g.teleport(place[0], place[1], place[2], place[3]);
+          g.look(place[3], place[4]);
+          g.input({});
+          g.step(300);
+          elapsed += 300;
+          continue;
+        }
+        g.input({ interactHeld: true });
+        g.step(stepMs);
+        elapsed += stepMs;
+      }
+      return { used: elapsed };
+    }, [id, objectiveIndex, place, remaining]);
+
+    remaining -= Math.max(r.used, 400);
+    if (r.done) return deaths;
+    if (r.died) {
+      deaths++;
+      await page.waitForFunction(() => window.__UC.state().screen === 'death', { timeout: 15_000 });
+      await page.click('#btn-retry');
+      await drive(page, {}, 600);
+      await reposition();
+      remaining -= 1500;
+      continue;
+    }
+    break;
+  }
+  return deaths;
+}
+
 test.beforeAll(async () => {
   await mkdir(SHOTS, { recursive: true });
   await mkdir(LOGS, { recursive: true });

@@ -56,10 +56,30 @@ await page.waitForFunction(() => window.__UC_READY === true, { timeout: 90000 })
 
 const captured = [];
 
+/**
+ * Settle two rendered frames, then grab the canvas.
+ *
+ * The default 30 s screenshot timeout is not enough here: on the open exterior
+ * beats SwiftShader can take several seconds per frame, and `page.screenshot()`
+ * has to wait for a composited one behind whatever the rAF loop is already
+ * rasterising. `beat-13-helipad-hold` — eight contractors, alarm strobes and the
+ * sky dome — blew through it and killed the whole run at beat 13 of 25. The
+ * timeout is raised and a single retry added rather than lowering the visual
+ * fidelity of the capture.
+ */
 const shot = async (name) => {
-  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   const file = `${OUT}/${PREFIX}-${name}.png`;
-  await page.screenshot({ path: file });
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      await page.screenshot({ path: file, timeout: 180_000 });
+      break;
+    } catch (err) {
+      if (attempt === 2) throw err;
+      console.log(`  retrying ${name} after: ${err.message.split('\n')[0]}`);
+      await sleep(2000);
+    }
+  }
   captured.push(file);
   console.log('captured', file);
   return file;

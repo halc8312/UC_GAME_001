@@ -1,8 +1,8 @@
 {
-  "bootMs": 4195,
+  "bootMs": 4591,
   "consoleErrors": [],
   "consoleWarnings": [
-    "[.WebGL-0x80c0013bc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    "[.WebGL-0xec400114800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
   ],
   "failedRequests": [],
   "externalRequests": [],
