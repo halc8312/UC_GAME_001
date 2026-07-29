@@ -1,0 +1,114 @@
+{
+  "capturedAt": "2026-07-28T13:11:56.536Z",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "files": [
+    "artifacts/screenshots/wip-01-main-menu.png",
+    "artifacts/screenshots/wip-02-briefing.png",
+    "artifacts/screenshots/wip-03-dock-approach.png",
+    "artifacts/screenshots/wip-04-dock-advance.png",
+    "artifacts/screenshots/wip-05-apron-contact.png",
+    "artifacts/screenshots/wip-06-pump-hall.png",
+    "artifacts/screenshots/wip-07-pump-hall-firefight.png",
+    "artifacts/screenshots/wip-08-breaker-prompt.png",
+    "artifacts/screenshots/wip-09-server-room.png",
+    "artifacts/screenshots/wip-10-data-core-hold.png",
+    "artifacts/screenshots/wip-11-alarm-catwalk.png",
+    "artifacts/screenshots/wip-12-catwalk-battle.png",
+    "artifacts/screenshots/wip-13-helipad-hold.png",
+    "artifacts/screenshots/wip-14-shotgun.png",
+    "artifacts/screenshots/wip-15-ads.png",
+    "artifacts/screenshots/wip-16-low-health.png",
+    "artifacts/screenshots/wip-17-pause.png",
+    "artifacts/screenshots/wip-18-settings.png",
+    "artifacts/screenshots/wip-19-controls.png",
+    "artifacts/screenshots/wip-20-death.png",
+    "artifacts/screenshots/wip-21-results.png",
+    "artifacts/screenshots/wip-22-alarm-normal.png",
+    "artifacts/screenshots/wip-22-alarm-reduced-flash.png"
+  ],
+  "console": [
+    "[warning] [.WebGL-0x9a400140800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x9a400140800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x9a400140800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x9a400140800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ],
+  "missionCompleted": true,
+  "result": {
+    "success": true,
+    "timeSeconds": 45,
+    "shotsFired": 0,
+    "shotsHit": 0,
+    "accuracy": 0,
+    "kills": 0,
+    "headshots": 0,
+    "damageTaken": 392,
+    "deaths": 3,
+    "objectivesCompleted": 5,
+    "objectivesTotal": 5,
+    "score": 45.7,
+    "grade": "C"
+  },
+  "metrics": {
+    "samples": 19,
+    "frameMs": {
+      "mean": 250,
+      "p50": 250,
+      "p95": 250,
+      "p99": 250,
+      "max": 250
+    },
+    "simMs": {
+      "mean": 0.079,
+      "p95": 1,
+      "p99": 1,
+      "max": 1
+    },
+    "renderMs": {
+      "mean": 4.247,
+      "p95": 11.2,
+      "max": 11.2
+    },
+    "fps": {
+      "mean": 4,
+      "p05": 4
+    },
+    "drawCalls": 0,
+    "triangles": 0,
+    "programs": 16,
+    "geometries": 50,
+    "textures": 46,
+    "heapMB": 16.3,
+    "marks": [
+      {
+        "name": "mission_start",
+        "at": 617156.1000000006,
+        "frame": 0,
+        "checkpoint": 3
+      }
+    ],
+    "pools": {
+      "decals": 0,
+      "sparks": 0,
+      "tracers": 0,
+      "starved": 3
+    },
+    "audio": {
+      "activeVoices": 3,
+      "peakVoices": 24,
+      "played": 336,
+      "dropped": 87,
+      "failed": 0,
+      "ready": true,
+      "events": 423
+    },
+    "level": {
+      "merged": 9,
+      "meshes": 125,
+      "triangles": 1236
+    }
+  },
+  "errors": []
+}

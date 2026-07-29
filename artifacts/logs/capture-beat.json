@@ -1,0 +1,126 @@
+{
+  "capturedAt": "2026-07-29T07:14:54.455Z",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "files": [
+    "artifacts/screenshots/beat-01-main-menu.png",
+    "artifacts/screenshots/beat-02-briefing.png",
+    "artifacts/screenshots/beat-03-dock-approach.png",
+    "artifacts/screenshots/beat-04-dock-advance.png",
+    "artifacts/screenshots/beat-05-apron-contact.png",
+    "artifacts/screenshots/beat-06-pump-hall.png",
+    "artifacts/screenshots/beat-07-pump-hall-firefight.png",
+    "artifacts/screenshots/beat-08-breaker-prompt.png",
+    "artifacts/screenshots/beat-09-server-room.png",
+    "artifacts/screenshots/beat-10-data-core-hold.png",
+    "artifacts/screenshots/beat-11-alarm-catwalk.png",
+    "artifacts/screenshots/beat-12-catwalk-battle.png",
+    "artifacts/screenshots/beat-13-helipad-hold.png",
+    "artifacts/screenshots/beat-14-shotgun.png",
+    "artifacts/screenshots/beat-14b-muzzle-flash.png",
+    "artifacts/screenshots/beat-15-ads.png",
+    "artifacts/screenshots/beat-16-low-health.png",
+    "artifacts/screenshots/beat-17-pause.png",
+    "artifacts/screenshots/beat-18-settings.png",
+    "artifacts/screenshots/beat-19-controls.png",
+    "artifacts/screenshots/beat-20-death.png",
+    "artifacts/screenshots/beat-21-results.png",
+    "artifacts/screenshots/beat-22-alarm-normal.png",
+    "artifacts/screenshots/beat-22-alarm-reduced-flash.png",
+    "artifacts/screenshots/beat-22-alarm-no-screen-effects.png"
+  ],
+  "console": [
+    "[warning] [.WebGL-0x21e40013c800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x21e40013c800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x21e40013c800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "[warning] [.WebGL-0x21e40013c800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ],
+  "missionCompleted": true,
+  "result": {
+    "success": true,
+    "timeSeconds": 45,
+    "shotsFired": 0,
+    "shotsHit": 0,
+    "accuracy": 0,
+    "kills": 0,
+    "headshots": 0,
+    "damageTaken": 262,
+    "deaths": 1,
+    "objectivesCompleted": 5,
+    "objectivesTotal": 5,
+    "score": 45.7,
+    "grade": "C"
+  },
+  "metrics": {
+    "samples": 29,
+    "frameMs": {
+      "mean": 250,
+      "p50": 250,
+      "p95": 250,
+      "p99": 250,
+      "max": 250
+    },
+    "simMs": {
+      "mean": 0.432,
+      "p95": 1.66,
+      "p99": 1.88,
+      "max": 1.88
+    },
+    "simFrameMs": {
+      "mean": 2.659,
+      "p95": 8.3,
+      "p99": 9.4,
+      "max": 9.4
+    },
+    "stepsPerFrame": {
+      "mean": 8.38,
+      "max": 67
+    },
+    "renderMs": {
+      "mean": 4.303,
+      "p95": 11.2,
+      "max": 15.6
+    },
+    "fps": {
+      "mean": 4,
+      "p05": 4
+    },
+    "drawCalls": 209,
+    "triangles": 52110,
+    "programs": 26,
+    "geometries": 88,
+    "textures": 43,
+    "heapMB": 17.4,
+    "marks": [
+      {
+        "name": "mission_start",
+        "at": 943599.1999999993,
+        "frame": 0,
+        "checkpoint": 3
+      }
+    ],
+    "pools": {
+      "decals": 2,
+      "sparks": 14,
+      "tracers": 0,
+      "starved": 0
+    },
+    "audio": {
+      "activeVoices": 9,
+      "peakVoices": 24,
+      "played": 483,
+      "dropped": 4,
+      "failed": 0,
+      "ready": true,
+      "events": 487
+    },
+    "level": {
+      "merged": 17,
+      "meshes": 7,
+      "triangles": 7956
+    }
+  },
+  "errors": []
+}

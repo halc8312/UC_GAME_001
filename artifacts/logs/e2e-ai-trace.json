@@ -1,0 +1,132 @@
+{
+  "visited": [
+    "idle",
+    "patrol",
+    "suspicious",
+    "combat",
+    "search",
+    "dead"
+  ],
+  "traces": [
+    {
+      "id": "enemy_1",
+      "def": "e_hall_1",
+      "trace": [
+        {
+          "to": "idle",
+          "at": 0
+        },
+        {
+          "from": "idle",
+          "to": "patrol",
+          "reason": "spawned_patrol",
+          "at": 1
+        },
+        {
+          "from": "patrol",
+          "to": "suspicious",
+          "reason": "noticed",
+          "at": 2
+        },
+        {
+          "from": "suspicious",
+          "to": "combat",
+          "reason": "acquired",
+          "at": 3
+        },
+        {
+          "from": "combat",
+          "to": "search",
+          "reason": "lost_target",
+          "at": 4
+        },
+        {
+          "from": "search",
+          "to": "dead",
+          "reason": "killed",
+          "at": 5
+        }
+      ]
+    },
+    {
+      "id": "enemy_2",
+      "def": "e_hall_2",
+      "trace": [
+        {
+          "to": "idle",
+          "at": 0
+        },
+        {
+          "from": "idle",
+          "to": "patrol",
+          "reason": "spawned_patrol",
+          "at": 1
+        },
+        {
+          "from": "patrol",
+          "to": "suspicious",
+          "reason": "stimulus",
+          "at": 2
+        },
+        {
+          "from": "suspicious",
+          "to": "combat",
+          "reason": "acquired",
+          "at": 3
+        },
+        {
+          "from": "combat",
+          "to": "search",
+          "reason": "lost_target",
+          "at": 4
+        },
+        {
+          "from": "search",
+          "to": "dead",
+          "reason": "killed",
+          "at": 5
+        }
+      ]
+    },
+    {
+      "id": "enemy_3",
+      "def": "e_hall_3",
+      "trace": [
+        {
+          "to": "idle",
+          "at": 0
+        },
+        {
+          "from": "idle",
+          "to": "patrol",
+          "reason": "spawned_patrol",
+          "at": 1
+        },
+        {
+          "from": "patrol",
+          "to": "suspicious",
+          "reason": "stimulus",
+          "at": 2
+        },
+        {
+          "from": "suspicious",
+          "to": "combat",
+          "reason": "acquired",
+          "at": 3
+        },
+        {
+          "from": "combat",
+          "to": "search",
+          "reason": "lost_target",
+          "at": 4
+        },
+        {
+          "from": "search",
+          "to": "dead",
+          "reason": "killed",
+          "at": 5
+        }
+      ]
+    }
+  ]
+}

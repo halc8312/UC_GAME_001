@@ -1,0 +1,103 @@
+{
+  "timeline": [
+    {
+      "at": 0,
+      "event": "deployed"
+    },
+    {
+      "at": 4.47,
+      "event": "objective_1_done",
+      "phase": "pump_hall"
+    },
+    {
+      "at": 7.25,
+      "event": "objective_2_done",
+      "phase": "server_room"
+    },
+    {
+      "at": 13.97,
+      "event": "objective_3_done_alarm",
+      "phase": "alarm"
+    },
+    {
+      "at": 9.87,
+      "event": "objective_4_done",
+      "phase": "extraction",
+      "deaths": 1
+    },
+    {
+      "at": 45.17,
+      "event": "mission_complete",
+      "result": {
+        "success": true,
+        "timeSeconds": 45,
+        "shotsFired": 148,
+        "shotsHit": 31,
+        "accuracy": 20.9,
+        "kills": 5,
+        "headshots": 0,
+        "damageTaken": 304,
+        "deaths": 2,
+        "objectivesCompleted": 5,
+        "objectivesTotal": 5,
+        "score": 52,
+        "grade": "C"
+      },
+      "deaths": 2
+    }
+  ],
+  "result": {
+    "success": true,
+    "timeSeconds": 45,
+    "shotsFired": 148,
+    "shotsHit": 31,
+    "accuracy": 20.9,
+    "kills": 5,
+    "headshots": 0,
+    "damageTaken": 304,
+    "deaths": 2,
+    "objectivesCompleted": 5,
+    "objectivesTotal": 5,
+    "score": 52,
+    "grade": "C"
+  },
+  "deathsDuringRun": 2,
+  "playedWithoutDebugKills": true,
+  "audioEventCount": 1445,
+  "distinctSounds": [
+    "alarm_siren",
+    "ambient_hum",
+    "ambient_sea",
+    "breaker_pull",
+    "checkpoint",
+    "enemy_alert",
+    "enemy_death",
+    "enemy_fire",
+    "enemy_hurt",
+    "footstep_concrete",
+    "footstep_grate",
+    "footstep_metal",
+    "hitmarker",
+    "impact_concrete",
+    "impact_flesh",
+    "impact_metal",
+    "interact_complete",
+    "interact_start",
+    "land",
+    "mission_fail",
+    "mission_success",
+    "objective_complete",
+    "player_death",
+    "player_hurt",
+    "powerdown",
+    "rifle_fire",
+    "rifle_reload_end",
+    "rifle_reload_start",
+    "ui_click",
+    "ui_hover",
+    "weapon_switch"
+  ],
+  "consoleErrors": [],
+  "externalRequests": [],
+  "runtimeErrors": []
+}

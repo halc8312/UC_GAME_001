@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Operation Undercurrent</title>
+    <meta name="description" content="A browser FPS vertical slice built on Three.js." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230d1319'/><circle cx='8' cy='8' r='4' fill='none' stroke='%2374e0c0' stroke-width='1.2'/><rect x='7.5' y='1' width='1' height='3' fill='%2374e0c0'/><rect x='7.5' y='12' width='1' height='3' fill='%2374e0c0'/></svg>" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="view" tabindex="0"></canvas>
+
+      <!-- ================= HUD ================= -->
+      <div id="hud" class="hud hidden" aria-hidden="true">
+        <div class="vignette" id="vignette"></div>
+        <div class="alarm-vig" id="alarm-vig"></div>
+        <div class="hurt-flash" id="hurt-flash"></div>
+
+        <div class="crosshair" id="crosshair">
+          <span class="ch ch-t"></span><span class="ch ch-b"></span>
+          <span class="ch ch-l"></span><span class="ch ch-r"></span>
+          <span class="ch-dot"></span>
+          <span class="hitmarker" id="hitmarker">
+            <i></i><i></i><i></i><i></i>
+          </span>
+        </div>
+
+        <div class="damage-ring" id="damage-ring"></div>
+
+        <div class="compass" id="compass">
+          <div class="compass-strip" id="compass-strip"></div>
+          <div class="compass-needle"></div>
+        </div>
+
+        <section class="objectives" id="objectives-panel">
+          <h2 class="obj-title">OPERATION UNDERCURRENT</h2>
+          <ul class="obj-list" id="obj-list"></ul>
+        </section>
+
+        <div class="mission-timer" id="mission-timer"><span id="timer-value">00:00</span></div>
+
+        <div class="hold-timer hidden" id="hold-timer">
+          <div class="hold-label">EXTRACTION IN</div>
+          <div class="hold-value" id="hold-value">45</div>
+          <div class="hold-bar"><i id="hold-bar-fill"></i></div>
+        </div>
+
+        <div class="vitals">
+          <div class="vital-row">
+            <span class="vital-key">HP</span>
+            <div class="bar bar-health"><i id="health-fill"></i></div>
+            <span class="vital-num" id="health-num">100</span>
+          </div>
+          <div class="vital-row">
+            <span class="vital-key">AR</span>
+            <div class="bar bar-armor"><i id="armor-fill"></i></div>
+            <span class="vital-num" id="armor-num">0</span>
+          </div>
+        </div>
+
+        <div class="weapon-panel">
+          <div class="ammo">
+            <span class="ammo-mag" id="ammo-mag">30</span>
+            <span class="ammo-sep">/</span>
+            <span class="ammo-reserve" id="ammo-reserve">180</span>
+          </div>
+          <div class="weapon-name" id="weapon-name">MX-4 CARBINE</div>
+          <ul class="weapon-list" id="weapon-list"></ul>
+          <div class="reload-bar hidden" id="reload-bar"><i id="reload-fill"></i></div>
+        </div>
+
+        <div class="prompt hidden" id="interact-prompt">
+          <span class="key">E</span>
+          <span class="prompt-text" id="prompt-text">Interact</span>
+          <div class="prompt-bar hidden" id="prompt-bar"><i id="prompt-fill"></i></div>
+        </div>
+
+        <div class="toasts" id="toasts"></div>
+        <div class="subtitle" id="subtitle"></div>
+        <div class="marker-layer" id="marker-layer"></div>
+
+        <div class="perf hidden" id="perf-overlay"></div>
+      </div>
+
+      <!-- ================= SCREENS ================= -->
+      <div id="screens">
+        <!-- Loading -->
+        <section class="screen" id="screen-loading" data-screen="loading">
+          <div class="screen-inner center">
+            <div class="logo">
+              <span class="logo-mark"></span>
+              <h1>OPERATION<em>UNDERCURRENT</em></h1>
+            </div>
+            <div class="loading-bar"><i id="loading-fill"></i></div>
+            <p class="loading-text" id="loading-text">Generating facility…</p>
+          </div>
+        </section>
+
+        <!-- Main menu -->
+        <section class="screen hidden" id="screen-menu" data-screen="menu">
+          <div class="screen-inner">
+            <div class="menu-left">
+              <div class="logo">
+                <span class="logo-mark"></span>
+                <h1>OPERATION<em>UNDERCURRENT</em></h1>
+              </div>
+              <p class="tagline">Tidal substation UC-001 · Coastal sector · 19:40 local</p>
+              <nav class="menu-nav">
+                <button class="btn btn-primary" id="btn-start" data-sfx>DEPLOY</button>
+                <button class="btn" id="btn-settings" data-sfx>SETTINGS</button>
+                <button class="btn" id="btn-controls" data-sfx>CONTROLS</button>
+              </nav>
+              <p class="build-line" id="build-line"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Briefing -->
+        <section class="screen hidden" id="screen-briefing" data-screen="briefing">
+          <div class="screen-inner">
+            <div class="panel brief">
+              <header class="panel-head">
+                <h2>MISSION BRIEFING</h2>
+                <span class="stamp">CLASSIFIED</span>
+              </header>
+              <div class="brief-grid">
+                <div class="brief-body">
+                  <p class="brief-lead">
+                    Undercurrent Station is running a covert uplink off the tidal grid.
+                    You are inserting alone at the dock. Cut the security grid, pull the
+                    data core, and get to the helipad before their reaction team seals
+                    the facility.
+                  </p>
+                  <ol class="brief-objectives" id="brief-objectives"></ol>
+                </div>
+                <aside class="brief-side">
+                  <h3>LOADOUT</h3>
+                  <ul class="loadout">
+                    <li><b>MX-4 CARBINE</b><span>620 rpm · 30 rnd · 180 reserve</span></li>
+                    <li><b>ARMOUR</b><span>None issued — scavenge on site</span></li>
+                    <li><b>SUPPORT</b><span>Extraction bird, 45 s on station</span></li>
+                  </ul>
+                  <h3>THREAT</h3>
+                  <p class="threat">
+                    Private contractors. Rifle-armed, cover-trained, networked comms.
+                    Expect the facility to go loud once the core is pulled.
+                  </p>
+                </aside>
+              </div>
+              <footer class="panel-foot">
+                <button class="btn" id="btn-brief-back" data-sfx>BACK</button>
+                <button class="btn btn-primary" id="btn-deploy" data-sfx>BEGIN INFILTRATION</button>
+              </footer>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pause -->
+        <section class="screen hidden" id="screen-pause" data-screen="pause">
+          <div class="screen-inner center">
+            <div class="panel narrow">
+              <header class="panel-head"><h2>PAUSED</h2></header>
+              <nav class="menu-nav">
+                <button class="btn btn-primary" id="btn-resume" data-sfx>RESUME</button>
+                <button class="btn" id="btn-pause-settings" data-sfx>SETTINGS</button>
+                <button class="btn" id="btn-restart" data-sfx>RESTART CHECKPOINT</button>
+                <button class="btn btn-danger" id="btn-abort" data-sfx>ABORT MISSION</button>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings -->
+        <section class="screen hidden" id="screen-settings" data-screen="settings">
+          <div class="screen-inner center">
+            <div class="panel">
+              <header class="panel-head"><h2>SETTINGS</h2></header>
+              <div class="settings-grid" id="settings-grid"></div>
+              <footer class="panel-foot">
+                <button class="btn" id="btn-settings-reset" data-sfx>RESET DEFAULTS</button>
+                <button class="btn btn-primary" id="btn-settings-back" data-sfx>BACK</button>
+              </footer>
+            </div>
+          </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="screen hidden" id="screen-controls" data-screen="controls">
+          <div class="screen-inner center">
+            <div class="panel">
+              <header class="panel-head"><h2>CONTROLS</h2></header>
+              <div class="controls-grid" id="controls-grid"></div>
+              <footer class="panel-foot">
+                <button class="btn btn-primary" id="btn-controls-back" data-sfx>BACK</button>
+              </footer>
+            </div>
+          </div>
+        </section>
+
+        <!-- Death -->
+        <section class="screen hidden" id="screen-death" data-screen="death">
+          <div class="screen-inner center">
+            <div class="panel narrow death">
+              <h2 class="death-title">OPERATOR DOWN</h2>
+              <p class="death-sub" id="death-sub">Signal lost at Undercurrent Station.</p>
+              <nav class="menu-nav">
+                <button class="btn btn-primary" id="btn-retry" data-sfx>RETRY CHECKPOINT</button>
+                <button class="btn" id="btn-death-menu" data-sfx>RETURN TO MENU</button>
+              </nav>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results -->
+        <section class="screen hidden" id="screen-results" data-screen="results">
+          <div class="screen-inner center">
+            <div class="panel results">
+              <header class="panel-head">
+                <h2>MISSION COMPLETE</h2>
+                <span class="stamp ok">EXTRACTED</span>
+              </header>
+              <div class="grade-wrap">
+                <div class="grade" id="results-grade">A</div>
+                <div class="grade-label">OPERATION GRADE</div>
+              </div>
+              <dl class="results-grid" id="results-grid"></dl>
+              <footer class="panel-foot">
+                <button class="btn" id="btn-results-menu" data-sfx>MAIN MENU</button>
+                <button class="btn btn-primary" id="btn-replay" data-sfx>REPLAY MISSION</button>
+              </footer>
+            </div>
+          </div>
+        </section>
+
+        <!-- Click-to-resume overlay shown when pointer lock drops -->
+        <section class="screen hidden click-catch" id="screen-focus" data-screen="focus">
+          <div class="screen-inner center">
+            <div class="focus-box">
+              <p>CLICK TO RESUME</p>
+              <small>Pointer lock required for mouselook</small>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,825 @@
+/* Operation Undercurrent — HUD and screen styling.
+   Palette: cold steel + sodium amber, with a mint accent for player-facing UI and
+   red reserved exclusively for threat/alarm so it never competes for attention. */
+
+:root {
+  --ink: #05080b;
+  --steel-900: #0b1116;
+  --steel-800: #121a22;
+  --steel-700: #1b2732;
+  --steel-600: #2a3a49;
+  --steel-400: #566d80;
+  --steel-200: #9db0c0;
+  --paper: #dce7ef;
+  --mint: #74e0c0;
+  --mint-dim: #3f9b83;
+  --amber: #ffb15e;
+  --amber-dim: #b8763a;
+  --danger: #ff4d3d;
+  --danger-dim: #a32d24;
+  --ok: #8fe06a;
+  --hud-font: 'DIN Alternate', 'Bahnschrift', 'Segoe UI', 'Roboto Condensed', system-ui, sans-serif;
+  --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+  --hud-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 14px rgba(0, 0, 0, 0.5);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--hud-font);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { position: fixed; inset: 0; }
+
+#view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  outline: none;
+  cursor: none;
+}
+#view.unlocked { cursor: crosshair; }
+
+.hidden { display: none !important; }
+
+/* ============================ HUD ============================ */
+
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  contain: layout style;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.55) 100%);
+  transition: background 220ms linear;
+}
+
+/* Low health is a *neutral* signal: darkened corners with a slow breath, no hue
+   shift. It must never be confused with the alarm, which owns red. Two grades —
+   `hurt` below 45 HP, `hurt crit` below 22 — so the player feels the state
+   escalate instead of getting one flat warning and then dying. The scene
+   desaturation that goes with it lives on #view.lowhp, below. */
+.vignette.hurt {
+  background:
+    radial-gradient(ellipse at center, transparent 24%, rgba(2, 3, 5, 0.90) 100%),
+    radial-gradient(ellipse at center, transparent 52%, rgba(8, 11, 15, 0.55) 100%);
+  animation: hurtBreath 2.4s ease-in-out infinite;
+}
+.vignette.hurt.crit {
+  background:
+    radial-gradient(ellipse at center, transparent 12%, rgba(0, 0, 0, 0.97) 100%),
+    radial-gradient(ellipse at center, transparent 38%, rgba(4, 6, 9, 0.72) 100%);
+  animation: hurtBreath 1s ease-in-out infinite;
+}
+@keyframes hurtBreath {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+#view.lowhp {
+  filter: saturate(0.52) contrast(1.05) brightness(0.94);
+  transition: filter 420ms linear;
+}
+#view.lowhp.crit { filter: saturate(0.28) contrast(1.1) brightness(0.86); }
+
+/* Alarm owns red, and only in a narrow band at the very edge of the frame. An
+   earlier version ran it 14% deep at 0.55 alpha; side-by-side captures showed it
+   dissolving the contractors it was supposed to be warning about, so the screen
+   layer is now a hint and the world lighting carries the state. */
+.alarm-vig {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background:
+    linear-gradient(to right, rgba(255, 44, 30, 0.34), rgba(255, 44, 30, 0) 7%),
+    linear-gradient(to left, rgba(255, 44, 30, 0.34), rgba(255, 44, 30, 0) 7%),
+    linear-gradient(to bottom, rgba(255, 44, 30, 0.20), rgba(255, 44, 30, 0) 5%),
+    linear-gradient(to top, rgba(255, 44, 30, 0.20), rgba(255, 44, 30, 0) 5%);
+  transition: opacity 260ms linear;
+}
+.alarm-vig.on { opacity: 1; animation: alarmEdge 1.15s ease-in-out infinite; }
+.alarm-vig.steady { opacity: 0.8; animation: none; }
+@keyframes alarmEdge {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.hurt-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 60, 40, 0.42);
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+/* ---- crosshair ---- */
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  --gap: 6px;
+  --len: 7px;
+  --thick: 2px;
+  --col: var(--mint);
+}
+.crosshair .ch {
+  position: absolute;
+  background: var(--col);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.95);
+  transition: opacity 90ms linear;
+}
+.ch-t { width: var(--thick); height: var(--len); left: calc(var(--thick) / -2); top: calc(-1 * (var(--gap) + var(--len))); }
+.ch-b { width: var(--thick); height: var(--len); left: calc(var(--thick) / -2); top: var(--gap); }
+.ch-l { height: var(--thick); width: var(--len); top: calc(var(--thick) / -2); left: calc(-1 * (var(--gap) + var(--len))); }
+.ch-r { height: var(--thick); width: var(--len); top: calc(var(--thick) / -2); left: var(--gap); }
+.ch-dot {
+  position: absolute;
+  width: 2px; height: 2px;
+  left: -1px; top: -1px;
+  background: var(--col);
+  opacity: 0.85;
+  border-radius: 50%;
+}
+.crosshair.hidden-ch .ch { opacity: 0; }
+.crosshair.hidden-ch .ch-dot { opacity: 1; width: 3px; height: 3px; left: -1.5px; top: -1.5px; }
+
+.hitmarker {
+  position: absolute;
+  left: 0; top: 0;
+  opacity: 0;
+  transform: scale(1.5);
+}
+.hitmarker i {
+  position: absolute;
+  width: 9px;
+  height: 2px;
+  background: #fff;
+  transform-origin: center;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.9);
+}
+.hitmarker i:nth-child(1) { transform: translate(-16px, -16px) rotate(45deg); }
+.hitmarker i:nth-child(2) { transform: translate(7px, -16px) rotate(-45deg); }
+.hitmarker i:nth-child(3) { transform: translate(-16px, 14px) rotate(-45deg); }
+.hitmarker i:nth-child(4) { transform: translate(7px, 14px) rotate(45deg); }
+.hitmarker.show { animation: hm 220ms ease-out; }
+.hitmarker.crit i { background: var(--danger); height: 3px; }
+@keyframes hm {
+  0% { opacity: 1; transform: scale(0.7); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+
+/* ---- damage direction ---- */
+.damage-ring { position: absolute; inset: 0; }
+.dmg-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0; height: 0;
+  transform-origin: 0 0;
+}
+/* An opaque red triangle sitting mid-frame reads as a prop stuck in the scenery —
+   a pass-3 reviewer took it for a floating shard of level geometry. It is now a
+   thin curved blade pushed out to the edge of the aiming zone, tapered at both
+   ends and glowing, so it can only be read as an overlay. */
+.dmg-arrow::after {
+  content: '';
+  position: absolute;
+  left: -78px;
+  top: -186px;
+  width: 156px;
+  height: 26px;
+  background:
+    radial-gradient(ellipse 60% 130% at 50% 100%, rgba(255, 96, 74, 0.95), rgba(255, 60, 40, 0) 72%);
+  clip-path: polygon(50% 0%, 84% 62%, 100% 100%, 0% 100%, 16% 62%);
+  filter: drop-shadow(0 0 7px rgba(255, 40, 25, 0.55));
+}
+
+/* ---- compass ---- */
+.compass {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  height: 26px;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent);
+  opacity: 0.85;
+}
+.compass-strip {
+  position: absolute;
+  top: 0;
+  height: 26px;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--steel-200);
+  text-shadow: var(--hud-shadow);
+}
+.compass-strip span {
+  display: inline-block;
+  width: 60px;
+  text-align: center;
+  line-height: 26px;
+}
+.compass-strip span.card { color: var(--paper); font-weight: 700; }
+.compass-strip span.obj { color: var(--mint); }
+.compass-needle {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(to bottom, var(--mint), transparent);
+}
+
+/* ---- objectives ---- */
+.objectives {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  min-width: 250px;
+  max-width: 330px;
+  padding: 10px 14px 10px 12px;
+  background: linear-gradient(100deg, rgba(8, 14, 19, 0.72), rgba(8, 14, 19, 0.25));
+  border-left: 2px solid var(--mint);
+  backdrop-filter: blur(2px);
+}
+.obj-title {
+  margin: 0 0 6px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--steel-400);
+  font-weight: 600;
+}
+.obj-list { list-style: none; margin: 0; padding: 0; }
+.obj-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--steel-200);
+  text-shadow: var(--hud-shadow);
+  transition: color 200ms;
+}
+.obj-list li .tick {
+  width: 11px;
+  flex: 0 0 11px;
+  color: var(--steel-600);
+  font-size: 11px;
+}
+.obj-list li.active { color: var(--paper); font-weight: 600; }
+.obj-list li.active .tick { color: var(--mint); }
+.obj-list li.done { color: var(--mint-dim); text-decoration: line-through; opacity: 0.7; }
+.obj-list li.done .tick { color: var(--mint-dim); }
+.obj-dist {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--mint);
+  opacity: 0.9;
+}
+
+.mission-timer {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--steel-200);
+  letter-spacing: 1px;
+  text-shadow: var(--hud-shadow);
+}
+
+/* ---- extraction hold ---- */
+.hold-timer {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: 260px;
+}
+.hold-label { font-size: 10px; letter-spacing: 4px; color: var(--amber); }
+.hold-value {
+  font-family: var(--mono);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 0 18px rgba(255, 177, 94, 0.5), var(--hud-shadow);
+}
+.hold-bar {
+  margin-top: 6px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.14);
+}
+.hold-bar i { display: block; height: 100%; width: 100%; background: var(--amber); transition: width 200ms linear; }
+
+/* ---- vitals ---- */
+.vitals {
+  position: absolute;
+  left: 26px;
+  bottom: 26px;
+  width: 226px;
+}
+.vital-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.vital-key { font-size: 10px; letter-spacing: 2px; color: var(--steel-400); width: 18px; }
+.bar {
+  position: relative;
+  flex: 1;
+  height: 9px;
+  background: rgba(6, 10, 14, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left;
+  transition: width 140ms ease-out, background-color 200ms;
+}
+.bar-health i { background: linear-gradient(90deg, var(--mint-dim), var(--mint)); }
+.bar-health.low i { background: linear-gradient(90deg, var(--danger-dim), var(--danger)); }
+.bar-armor i { background: linear-gradient(90deg, #4a6f9c, #86b7e8); }
+.vital-num {
+  font-family: var(--mono);
+  font-size: 14px;
+  width: 34px;
+  text-align: right;
+  color: var(--paper);
+  text-shadow: var(--hud-shadow);
+}
+
+/* ---- weapon ---- */
+.weapon-panel { position: absolute; right: 28px; bottom: 24px; text-align: right; }
+.ammo { line-height: 0.9; text-shadow: var(--hud-shadow); }
+.ammo-mag { font-family: var(--mono); font-size: 46px; font-weight: 700; color: var(--paper); }
+.ammo-mag.low { color: var(--danger); }
+.ammo-sep { font-size: 20px; color: var(--steel-600); margin: 0 3px; }
+.ammo-reserve { font-family: var(--mono); font-size: 20px; color: var(--steel-400); }
+.weapon-name {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--amber);
+  margin-top: 4px;
+  text-shadow: var(--hud-shadow);
+}
+.weapon-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.weapon-list li {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--steel-600);
+  line-height: 1.7;
+}
+.weapon-list li.active { color: var(--paper); }
+.weapon-list li .slot { color: var(--steel-400); margin-right: 6px; }
+.reload-bar {
+  margin-top: 7px;
+  margin-left: auto;
+  width: 128px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.reload-bar i { display: block; height: 100%; width: 0%; background: var(--amber); }
+
+/* ---- prompts / toasts / subtitles ---- */
+.prompt {
+  position: absolute;
+  left: 50%;
+  top: 57%;
+  transform: translateX(-50%);
+  text-align: center;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--paper);
+  text-shadow: var(--hud-shadow);
+}
+.prompt .key {
+  display: inline-block;
+  min-width: 22px;
+  padding: 2px 6px;
+  margin-right: 8px;
+  border: 1px solid var(--mint);
+  border-radius: 3px;
+  color: var(--mint);
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(6, 20, 17, 0.6);
+}
+.prompt-bar {
+  margin: 8px auto 0;
+  width: 150px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.18);
+}
+.prompt-bar i { display: block; height: 100%; width: 0%; background: var(--mint); }
+
+.toasts {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+  width: 460px;
+  text-align: center;
+}
+.toast {
+  font-size: 14px;
+  letter-spacing: 2px;
+  padding: 5px 0;
+  color: var(--paper);
+  text-shadow: var(--hud-shadow);
+  animation: toast-in 320ms ease-out both;
+}
+.toast.objective { color: var(--mint); font-weight: 700; }
+.toast.warn { color: var(--amber); }
+.toast.bad { color: var(--danger); font-weight: 700; }
+.toast.fading { animation: toast-out 420ms ease-in both; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(-6px); } }
+
+.subtitle {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  max-width: 620px;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--steel-200);
+  text-shadow: var(--hud-shadow);
+  opacity: 0;
+  transition: opacity 220ms;
+}
+.subtitle.show { opacity: 1; }
+.subtitle b { color: var(--mint); font-weight: 700; }
+
+/* ---- world markers ---- */
+.marker-layer { position: absolute; inset: 0; }
+.world-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--mint);
+  text-shadow: var(--hud-shadow);
+  white-space: nowrap;
+  will-change: transform;
+}
+.world-marker .diamond {
+  display: block;
+  width: 9px;
+  height: 9px;
+  margin: 0 auto 4px;
+  border: 1.5px solid var(--mint);
+  transform: rotate(45deg);
+}
+.world-marker .dist { display: block; font-family: var(--mono); font-size: 10px; opacity: 0.75; }
+.world-marker.offscreen .diamond { border-color: var(--amber); }
+.world-marker.pickup { color: #b39a78; font-size: 9px; letter-spacing: 1.5px; }
+.world-marker.pickup.far .label, .world-marker.pickup.far .dist { display: none; }
+.world-marker.pickup .diamond {
+  border-color: #b39a78;
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+}
+
+.perf {
+  position: absolute;
+  top: 46px;
+  right: 24px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--mint);
+  text-align: right;
+  background: rgba(4, 8, 11, 0.6);
+  padding: 6px 8px;
+  white-space: pre;
+}
+
+/* ============================ SCREENS ============================ */
+
+#screens { position: absolute; inset: 0; }
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(18, 34, 44, 0.55), transparent 60%),
+    linear-gradient(160deg, rgba(4, 7, 10, 0.94), rgba(6, 12, 17, 0.88));
+  backdrop-filter: blur(3px);
+  --scrim: 1;
+  animation: fade-in 220ms ease-out;
+  pointer-events: auto;
+}
+.screen.click-catch { background: rgba(3, 6, 9, 0.55); backdrop-filter: blur(1px); }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.screen-inner {
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  margin: auto;
+  padding: 40px 52px;
+}
+.screen-inner.center { display: flex; align-items: center; justify-content: center; }
+
+.logo { margin-bottom: 6px; }
+.logo-mark {
+  display: block;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 16px;
+  border: 2px solid var(--mint);
+  border-radius: 50%;
+  position: relative;
+}
+.logo-mark::before, .logo-mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 2px;
+  height: 12px;
+  background: var(--mint);
+  transform: translateX(-50%);
+}
+.logo-mark::before { top: -9px; }
+.logo-mark::after { bottom: -9px; }
+.logo h1 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 9px;
+  font-weight: 500;
+  color: var(--steel-400);
+  line-height: 1.2;
+}
+.logo h1 em {
+  display: block;
+  font-style: normal;
+  font-size: 46px;
+  letter-spacing: 7px;
+  font-weight: 700;
+  color: var(--paper);
+  text-shadow: 0 0 28px rgba(116, 224, 192, 0.22);
+}
+.tagline {
+  margin: 14px 0 34px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--steel-400);
+}
+.build-line {
+  margin-top: 40px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--steel-600);
+  letter-spacing: 1px;
+}
+
+.menu-nav { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.screen-inner.center .menu-nav { align-items: stretch; }
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--steel-600);
+  background: rgba(12, 20, 27, 0.72);
+  color: var(--steel-200);
+  font-family: var(--hud-font);
+  font-size: 13px;
+  letter-spacing: 3px;
+  font-weight: 600;
+  padding: 12px 30px;
+  min-width: 240px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms, color 140ms, background-color 140ms, transform 90ms;
+  position: relative;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: transparent;
+  transition: background-color 140ms;
+}
+.btn:hover, .btn:focus-visible {
+  color: var(--paper);
+  border-color: var(--mint-dim);
+  background: rgba(18, 34, 42, 0.85);
+  outline: none;
+}
+.btn:hover::before, .btn:focus-visible::before { background: var(--mint); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { color: var(--paper); border-color: var(--mint-dim); }
+.btn-primary::before { background: var(--mint-dim); }
+.btn-danger:hover { border-color: var(--danger-dim); }
+.btn-danger:hover::before { background: var(--danger); }
+
+.panel {
+  width: 100%;
+  max-width: 880px;
+  background: linear-gradient(150deg, rgba(11, 18, 24, 0.96), rgba(8, 13, 18, 0.92));
+  border: 1px solid var(--steel-700);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+}
+.panel.narrow { max-width: 400px; }
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 26px;
+  border-bottom: 1px solid var(--steel-700);
+}
+.panel-head h2 { margin: 0; font-size: 15px; letter-spacing: 6px; font-weight: 600; color: var(--paper); }
+.stamp {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--danger);
+  border: 1px solid var(--danger-dim);
+  padding: 3px 9px;
+}
+.stamp.ok { color: var(--ok); border-color: rgba(143, 224, 106, 0.4); }
+.panel-foot {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 18px 26px;
+  border-top: 1px solid var(--steel-700);
+}
+.panel-foot .btn { min-width: 180px; text-align: center; }
+.panel.narrow .menu-nav { padding: 22px 26px; }
+.panel.narrow .btn { min-width: 100%; text-align: center; }
+
+.brief-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 34px; padding: 26px; }
+.brief-lead { margin: 0 0 20px; font-size: 14px; line-height: 1.75; color: var(--steel-200); }
+.brief-objectives { margin: 0; padding-left: 18px; }
+.brief-objectives li {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--paper);
+  margin-bottom: 4px;
+}
+.brief-objectives li span { display: block; font-size: 11.5px; color: var(--steel-400); letter-spacing: 0.4px; }
+.brief-side h3 {
+  margin: 0 0 10px;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--mint);
+  font-weight: 600;
+}
+.brief-side h3:not(:first-child) { margin-top: 22px; }
+.loadout { list-style: none; margin: 0; padding: 0; }
+.loadout li { margin-bottom: 10px; }
+.loadout b { display: block; font-size: 12px; letter-spacing: 2px; color: var(--paper); }
+.loadout span { font-size: 11px; color: var(--steel-400); }
+.threat { margin: 0; font-size: 12px; line-height: 1.7; color: var(--steel-400); }
+
+.settings-grid, .controls-grid { padding: 22px 26px; display: grid; gap: 14px; }
+.controls-grid { grid-template-columns: 1fr 1fr; gap: 10px 34px; }
+.setting {
+  display: grid;
+  grid-template-columns: 190px 1fr 62px;
+  align-items: center;
+  gap: 16px;
+}
+.setting label { font-size: 12px; letter-spacing: 2px; color: var(--steel-200); }
+.setting input[type='range'] { width: 100%; accent-color: var(--mint); }
+.setting .value { font-family: var(--mono); font-size: 12px; color: var(--mint); text-align: right; }
+.setting .toggle {
+  appearance: none;
+  width: 44px; height: 20px;
+  border: 1px solid var(--steel-600);
+  background: rgba(0, 0, 0, 0.4);
+  position: relative;
+  cursor: pointer;
+  transition: border-color 140ms;
+}
+.setting .toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: var(--steel-400);
+  transition: transform 140ms, background-color 140ms;
+}
+.setting .toggle:checked { border-color: var(--mint-dim); }
+.setting .toggle:checked::after { transform: translateX(22px); background: var(--mint); }
+
+.ctrl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 1px dashed rgba(86, 109, 128, 0.22);
+  font-size: 12.5px;
+}
+.ctrl-row .keys { font-family: var(--mono); color: var(--mint); letter-spacing: 1px; }
+.ctrl-row .act { color: var(--steel-200); }
+
+.death { border-color: var(--danger-dim); }
+.death-title {
+  margin: 30px 26px 8px;
+  font-size: 26px;
+  letter-spacing: 8px;
+  color: var(--danger);
+  text-align: center;
+  text-shadow: 0 0 30px rgba(255, 77, 61, 0.3);
+}
+.death-sub { margin: 0 26px 24px; text-align: center; font-size: 12px; color: var(--steel-400); }
+
+.grade-wrap { text-align: center; padding: 26px 0 8px; }
+.grade {
+  font-size: 78px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--mint);
+  text-shadow: 0 0 40px rgba(116, 224, 192, 0.28);
+}
+.grade-label { font-size: 10px; letter-spacing: 5px; color: var(--steel-400); margin-top: 6px; }
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin: 24px 26px;
+  background: var(--steel-700);
+  border: 1px solid var(--steel-700);
+}
+.results-grid div {
+  background: rgba(8, 13, 18, 0.95);
+  padding: 14px 16px;
+}
+.results-grid dt { font-size: 10px; letter-spacing: 2px; color: var(--steel-400); }
+.results-grid dd {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--paper);
+}
+
+.loading-bar {
+  width: 320px;
+  height: 2px;
+  margin: 34px 0 12px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.loading-bar i { display: block; height: 100%; width: 0%; background: var(--mint); transition: width 180ms; }
+.loading-text { font-size: 11px; letter-spacing: 3px; color: var(--steel-400); margin: 0; }
+.screen-inner.center .loading-bar { margin-left: auto; margin-right: auto; }
+.screen-inner.center .loading-text { text-align: center; }
+.screen-inner.center .logo { text-align: center; }
+.screen-inner.center .logo-mark { margin-left: auto; margin-right: auto; }
+
+.focus-box { text-align: center; }
+.focus-box p { margin: 0; font-size: 16px; letter-spacing: 6px; color: var(--paper); }
+.focus-box small { display: block; margin-top: 8px; font-size: 11px; color: var(--steel-400); letter-spacing: 2px; }
+
+/* Smaller viewports: keep the HUD from colliding with itself. */
+@media (max-width: 1400px) {
+  .objectives { max-width: 290px; }
+  .toasts { width: 400px; }
+}
+@media (max-height: 760px) {
+  .ammo-mag { font-size: 38px; }
+  .grade { font-size: 60px; }
+  .screen-inner { padding: 26px 40px; }
+  .brief-grid { gap: 24px; padding: 20px; }
+  .brief-lead { font-size: 13px; margin-bottom: 14px; }
+  .brief-objectives li { line-height: 1.7; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast, .hitmarker.show, .screen { animation-duration: 1ms !important; }
+}
+
+/* The death and results screens keep the world legible behind them: being shown a
+   black rectangle tells the player nothing about what killed them. */
+#screen-death, #screen-results {
+  background:
+    radial-gradient(ellipse at center, rgba(8, 12, 16, 0.32) 20%, rgba(4, 7, 10, 0.78) 100%);
+  backdrop-filter: saturate(0.35) blur(1.5px);
+}
+#screen-death { background-color: rgba(40, 6, 4, 0.18); }
