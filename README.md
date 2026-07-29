@@ -20,7 +20,24 @@ npm run dev          # http://127.0.0.1:5173
 ```
 
 Click the canvas to capture the pointer, then play. `Esc` releases the pointer and
-opens the pause menu.
+opens the pause menu. Fire and aim need the pointer captured — that is what keeps a
+click on a menu button out of the simulation.
+
+### If it runs slowly
+
+The build asks the browser for the GPU (`powerPreference: 'high-performance'`), but
+a browser will fall back to a software rasteriser without saying so — a blocklisted
+driver, hardware acceleration switched off, or a VM. The renderer it actually picked
+is printed on the main menu under the build number, and again in the `F3` overlay:
+
+- `gpu NVIDIA GeForce RTX 4070` — running on hardware.
+- `⚠ software rendering — SwiftShader Device` — running on the CPU. Turn on hardware
+  acceleration in your browser settings (Chrome: `chrome://settings/system`; check
+  `chrome://gpu` for the reason it was disabled).
+
+All screenshots in `artifacts/` were captured in headless CI, which has no GPU, so
+they are SwiftShader frames at roughly 0.3 fps. That is a property of the capture
+environment, not of the game.
 
 ### Controls
 

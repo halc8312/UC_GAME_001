@@ -59,7 +59,6 @@ export class Input {
   constructor(target, settings) {
     this.target = target;
     this.settings = settings;
-    this.enabled = false;
     this.locked = false;
     this.synthetic = null; // when set, device input is ignored
 
@@ -103,8 +102,19 @@ export class Input {
 
     this._on(window, 'blur', () => this.reset());
 
+    // Mouse buttons only drive the weapon while the pointer is captured.
+    //
+    // Gating on the lock is what keeps the click that *acquires* the lock from
+    // also firing the gun, and keeps clicks on the menu, the pause screen and the
+    // focus prompt out of the simulation. It replaces an `enabled` flag that was
+    // initialised to false and never assigned anywhere in the codebase, which
+    // meant this handler returned on its first line for every real player: fire
+    // and aim were dead on hardware for the whole build. Every automated test
+    // installs a synthetic command frame, which returns from `buildCommand()`
+    // before it reads `this.mouse` at all, so nothing caught it. See
+    // tests/unit/input.test.js and the "real mouse" e2e spec.
     this._on(this.target, 'mousedown', (e) => {
-      if (!this.enabled) return;
+      if (!this.locked) return;
       if (e.button === 0) {
         if (!this.mouse.left) this.mouse.leftEdge = true;
         this.mouse.left = true;

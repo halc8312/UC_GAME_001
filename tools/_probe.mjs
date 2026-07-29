@@ -6,60 +6,55 @@ import { setTimeout as sleep } from 'node:timers/promises';
 const PORT = 4177;
 const server = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'], { stdio: 'ignore' });
 process.on('exit', () => { try { server.kill('SIGTERM'); } catch { /* gone */ } });
-await sleep(1800);
+await sleep(2200);
 
 const browser = await chromium.launch({ args: ['--enable-unsafe-swiftshader', '--mute-audio'] });
-const page = await browser.newPage({ viewport: { width: 640, height: 360 } });
+const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 page.on('pageerror', (e) => console.log('[pageerror]', e.message));
 await page.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => window.__UC_READY === true, { timeout: 90000 });
 
-// One life on the catwalk, half-second by half-second: where is the damage coming
-// from, and is the player actually killing anything back?
-const trace = await page.evaluate(() => {
-  const g = window.__UC;
-  g.freeze(true);
-  g.startMission(3);
-  g.step(300);
-  g.input({});
-  g.step(600);
+// Play with the real mouse: no synthetic frames anywhere in this probe.
+await page.click('#btn-start');
+await page.click('#btn-deploy');
+await page.waitForFunction(() => window.__UC.state().phase === 'approach');
 
-  const rows = [];
-  const target = { x: 28, z: -2 };
-  for (let i = 0; i < 40; i++) {
-    const s = g.state();
-    if (s.player.dead) {
-      rows.push({ t: (i * 0.5).toFixed(1), note: 'DEAD' });
-      break;
-    }
-    const live = s.enemies.states.filter((e) => !e.dead && e.visible)
-      .sort((a, b) => Math.hypot(a.x - s.player.x, a.z - s.player.z) -
-                      Math.hypot(b.x - s.player.x, b.z - s.player.z));
-    const t = live[0];
-    if (t) {
-      const d = Math.hypot(t.x - s.player.x, t.z - s.player.z);
-      g.look(Math.atan2(-(t.x - s.player.x), -(t.z - s.player.z)),
-             Math.atan2((t.y + 1.2) - (s.player.y + 1.62), Math.max(1, d)));
-      g.input({ fire: true, moveZ: 1 });
-    } else {
-      g.look(Math.atan2(-(target.x - s.player.x), -(target.z - s.player.z)), -0.02);
-      g.input({ moveZ: 1, sprint: true });
-    }
-    rows.push({
-      t: (i * 0.5).toFixed(1),
-      hp: Math.round(s.player.hp), ar: Math.round(s.player.armor),
-      pos: `${s.player.x.toFixed(0)},${s.player.z.toFixed(0)}`,
-      mag: s.weapon.mag, st: s.weapon.state,
-      vis: live.length, alive: s.enemies.alive, killed: s.enemies.killed,
-      tgt: t ? `${Math.hypot(t.x - s.player.x, t.z - s.player.z).toFixed(0)}m` : '-',
-    });
-    g.step(500);
-  }
-  const s = g.state();
-  return { rows, final: { hp: Math.round(s.player.hp), killed: s.enemies.killed, alive: s.enemies.alive } };
+// Deploying already took the pointer lock (the deploy click is the user gesture).
+await sleep(500);
+const locked = await page.evaluate(() => ({
+  pointerLockElement: document.pointerLockElement?.tagName ?? null,
+  inputLocked: window.__UC_APP.input.locked,
+}));
+console.log('after canvas click:', JSON.stringify(locked));
+
+const before = await page.evaluate(() => window.__UC.state().weapon);
+console.log('mag before:', before.mag, 'state:', before.state);
+
+// Hold the left button down for half a second of real frames.
+await page.mouse.down({ button: 'left' });
+await sleep(700);
+await page.mouse.up({ button: 'left' });
+await sleep(200);
+const afterFire = await page.evaluate(() => window.__UC.state().weapon);
+console.log('mag after left-mouse held 700ms:', afterFire.mag);
+
+// Right button should pull the camera FOV in.
+const fovHip = await page.evaluate(() => window.__UC_APP.camera.fov);
+await page.mouse.down({ button: 'right' });
+await sleep(600);
+const fovAds = await page.evaluate(() => window.__UC_APP.camera.fov);
+await page.mouse.up({ button: 'right' });
+await sleep(500);
+const fovBack = await page.evaluate(() => window.__UC_APP.camera.fov);
+console.log('fov hip -> ads -> released:', fovHip.toFixed(1), fovAds.toFixed(1), fovBack.toFixed(1));
+
+// And the GPU the browser actually picked.
+const gpu = await page.evaluate(() => {
+  const gl = document.createElement('canvas').getContext('webgl2');
+  const dbg = gl?.getExtension('WEBGL_debug_renderer_info');
+  return dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'unknown';
 });
-for (const r of trace.rows) console.log(JSON.stringify(r));
-console.log('final:', JSON.stringify(trace.final));
+console.log('webgl renderer:', gpu);
 
 await browser.close();
 process.exit(0);

@@ -203,6 +203,59 @@ export class RenderStack {
     this.renderer.render(this.scene, this.camera);
   }
 
+  /**
+   * Which renderer the browser actually handed us.
+   *
+   * `powerPreference: 'high-performance'` above is a request, not a guarantee: a
+   * browser falls back to a software rasteriser when the GPU is blocklisted,
+   * unavailable, or the tab is running without hardware acceleration, and it does
+   * so silently — the game looks identical and simply runs at a fraction of the
+   * speed. Every screenshot in `artifacts/` was taken through SwiftShader for
+   * exactly this reason. Surfacing the string is the only way a player can tell
+   * which one they are on, so it goes in the F3 overlay and in `__UC.gpu()`.
+   */
+  gpuInfo() {
+    if (this._gpuInfo) return this._gpuInfo;
+    let renderer = 'unknown';
+    let vendor = 'unknown';
+    try {
+      const gl = this.renderer.getContext();
+      const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+      if (dbg) {
+        renderer = String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) ?? 'unknown');
+        vendor = String(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) ?? 'unknown');
+      }
+    } catch {
+      // WEBGL_debug_renderer_info is gated in some privacy configurations. An
+      // unknown renderer is reported as unknown, never guessed at.
+    }
+    // Chromium reports SwiftShader, Mesa reports llvmpipe/softpipe, and Apple's
+    // fallback reports "Apple Software Renderer".
+    const software = /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic/i
+      .test(renderer);
+    this._gpuInfo = {
+      renderer,
+      vendor,
+      software,
+      // A short label for the overlay: the useful part of an ANGLE string is the
+      // adapter inside the parentheses, not the 90-character wrapper.
+      short: (renderer.match(/\(([^,()]+(?:\([^()]*\))?[^,()]*)\)\s*$/)?.[1] ?? renderer)
+        .replace(/\s*(Direct3D|OpenGL|Vulkan|Metal)[^)]*$/i, '')
+        .trim()
+        .slice(0, 46) || renderer.slice(0, 46),
+      maxTextureSize: (() => {
+        try {
+          const gl = this.renderer.getContext();
+          return gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        } catch {
+          return null;
+        }
+      })(),
+      pixelRatio: this.renderer.getPixelRatio(),
+    };
+    return this._gpuInfo;
+  }
+
   dispose() {
     for (const d of this._disposables) d.dispose?.();
     this._disposables.length = 0;

@@ -97,11 +97,20 @@ function installTestHooks(g, errorList) {
           visitedStates: g.enemies.visitedStates(),
           allStates: AI_STATE_ORDER,
         },
+        camera: {
+          fov: +g.camera.fov.toFixed(2),
+          locked: g.input.locked,
+        },
         interactTarget: p.interactTarget ? p.interactTarget.id : null,
         interactProgress: +p.interactProgress.toFixed(3),
         result: g.director.result,
         finished: g.director.finished,
       };
+    },
+
+    /** Which WebGL renderer the browser handed the page. */
+    gpu() {
+      return g.render3d.gpuInfo();
     },
 
     /** Inject a synthetic command frame; persists until changed. */

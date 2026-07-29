@@ -204,6 +204,39 @@ ceiling. With the counters repaired, the dock approach measured **552 draw calls
 against a 260 budget** — a budget that, on the evidence, had never actually been
 checked.
 
+### 3.7 GPU versus software rendering
+
+The game has always asked the browser for the GPU — `WebGLRenderer` is constructed
+with `powerPreference: 'high-performance'`, which is what picks the discrete adapter
+on a dual-GPU laptop, and `failIfMajorPerformanceCaveat` is deliberately left unset
+so the game still runs where there is no GPU rather than refusing to start. Nothing
+in the code selects, or can select, software rendering. Every screenshot in
+`artifacts/` looks CPU-bound because **this CI container has no GPU**: headless
+Chromium falls back to SwiftShader, and one 1280×720 frame takes ~3.9 s. Opened in a
+normal browser on a machine with a GPU, the same build renders on that GPU.
+
+What was missing was any way for a player to *check*. A browser that has fallen back
+to software — blocklisted driver, hardware acceleration switched off, a VM — looks
+identical and simply runs at a fraction of the speed, silently. So the renderer
+string is now read from the live context and surfaced in three places:
+
+- the build line on the main menu, prefixed `⚠ software rendering —` when it applies
+- the F3 performance overlay, as a `⚠ SOFTWARE` / `gpu <adapter>` row
+- `__UC.gpu()`, recorded to `artifacts/logs/e2e-gpu.json`
+
+```
+$ npx playwright test -g "WebGL renderer"
+{ "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) …), SwiftShader driver)",
+  "vendor": "Google Inc. (Google)", "software": true,
+  "short": "SwiftShader Device (Subzero)", "maxTextureSize": 8192, "pixelRatio": 1 }
+```
+
+The classification is a match against the known software rasterisers — SwiftShader,
+llvmpipe, softpipe, Microsoft Basic Render, Apple Software Renderer. This report
+cannot claim a hardware frame rate, because no run in this environment has ever had
+hardware to measure; the honest statement is that the build requests the GPU
+correctly and now tells the player which one it got.
+
 Two measurement artefacts are visible in `performance.json` and are not defects:
 
 - `soak.poolStarvation: 288` against `poolStarvationInRealtimeScenes: [0,0,0,0]`.
@@ -234,6 +267,7 @@ Every path below exists in the repository.
 | Console/network capture | `artifacts/logs/e2e-console.json` |
 | Playthrough tally + audio log | `artifacts/logs/e2e-playthrough.json` |
 | AI state trace | `artifacts/logs/e2e-ai-trace.json` |
+| WebGL renderer the browser picked | `artifacts/logs/e2e-gpu.json` |
 | Capture run log | `artifacts/logs/capture-beat.json` |
 | Performance, frame-time distribution + soak | `artifacts/perf/performance.json` |
 | Visual review passes | `artifacts/reviews/pass-{1,2,3}-visual-review.md` |
@@ -431,6 +465,70 @@ scarce one, so the geometry stays in as few meshes as possible. The reasoning is
 recorded in `levelbuild.js` so the next person does not re-run the experiment.
 
 Final: 182 draw calls, 54,082 triangles, both inside budget with margin.
+
+---
+
+### 5.10 The device input path, which no test ever touched
+
+Reported by the user, not by the harness: **left click did not fire and right click
+did not aim.** Both were dead on real hardware for the entire build, while all
+seventeen end-to-end tests passed.
+
+`Input` gated its `mousedown` handler on an `enabled` flag:
+
+```js
+this.enabled = false;              // constructor
+…
+this._on(this.target, 'mousedown', (e) => {
+  if (!this.enabled) return;       // ← returned here, every time
+```
+
+`grep -rn "\.enabled" src/` returns three hits: the two lines above, and
+`renderer.shadowMap.enabled = true`. **Nothing ever assigned it.** The handler
+returned on its first line for every player who ever clicked.
+
+Measured before and after, driving the shipped build with `page.mouse` — no
+synthetic frames anywhere (`tools/_probe.mjs`):
+
+```
+--- BEFORE ---
+mag before: 30 state: ready
+mag after left-mouse held 700ms: 30          ← no shot
+fov hip -> ads -> released: 78.0 78.0 78.0   ← no ADS
+
+--- AFTER ---
+mag before: 30 state: ready
+mag after left-mouse held 700ms: 28
+fov hip -> ads -> released: 78.0 55.5 77.2
+```
+
+**Why 757 unit tests and 17 e2e tests all missed it.** Every automated test drives
+the game through `__UC.input()`, which installs a synthetic command frame — and
+`buildCommand()` returns from the synthetic branch *before* it reads `this.mouse`
+at all. The keyboard, mouse and wheel listeners were therefore unreachable from the
+entire test suite. `Input` was never once instantiated in a unit test; the two pure
+functions beside it, `lookDelta()` and `makeCommand()`, were the only things in the
+module with coverage. The suite was thorough about the simulation and silent about
+the only path a player uses.
+
+The fix is one line of logic — the buttons now gate on the pointer lock, which is
+the condition that was actually meant, and which additionally stops the click that
+*acquires* the lock from discharging the weapon. The coverage gap took rather more:
+
+- `tests/unit/input.test.js`, 22 tests instantiating `Input` against a stub DOM:
+  buttons, lock gating, look accumulation and invert-Y, the full keyboard map,
+  edge-versus-held semantics, key autorepeat, wheel, focus loss, and `dispose()`.
+- An e2e test that touches `__UC` only to *read* state and does everything else
+  with `page.mouse` and `page.keyboard`. It fails against the old code
+  (`TimeoutError` after 20 s waiting for the magazine to drop) and passes against
+  the new one.
+
+A second defect fell out of the same investigation: `#screens`, the screen-stack
+container, spans the viewport with `pointer-events: auto` **whether or not a panel
+is showing**, so it swallowed every click aimed at the canvas — including the
+click-to-re-capture after Esc. Playwright refused the click outright with
+`<div id="screens"> intercepts pointer events`. It is `pointer-events: none` now,
+with the panels opting back in, which is what the HUD already did.
 
 ---
 

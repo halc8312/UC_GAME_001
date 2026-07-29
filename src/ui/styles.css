@@ -521,7 +521,11 @@ html, body {
 
 /* ============================ SCREENS ============================ */
 
-#screens { position: absolute; inset: 0; }
+/* The screen stack spans the viewport whether or not a panel is showing, so it
+   has to be transparent to the pointer or it swallows every click meant for the
+   canvas — including the click that re-takes the pointer lock after Esc. The
+   panels themselves opt back in with `pointer-events: auto` below. */
+#screens { position: absolute; inset: 0; pointer-events: none; }
 
 .screen {
   position: absolute;

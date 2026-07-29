@@ -143,7 +143,20 @@ export class Game {
     await step(0.93, 'Preparing interface…', () => {
       this.hud = new Hud(this.settings);
       this.screens = new Screens(this.bus, this.settings);
-      this.screens.setBuildLine(`${BUILD} · three r${THREE.REVISION}`);
+      // The renderer goes on the menu, not just behind F3: a browser that has
+      // silently fallen back to software rendering looks identical and runs at a
+      // fraction of the speed, and a player has no other way to find out.
+      const gpu = this.render3d.gpuInfo();
+      this.screens.setBuildLine(
+        `${BUILD} · three r${THREE.REVISION} · ` +
+        `${gpu.software ? '⚠ software rendering — ' : ''}${gpu.short}`,
+      );
+      if (gpu.software) {
+        console.warn(
+          `[UC] WebGL is running on a software rasteriser (${gpu.renderer}). ` +
+          'Enable hardware acceleration in your browser settings for full frame rate.',
+        );
+      }
       this.audio = new AudioEngine(this.settings);
       this.input = new Input(this.canvas, this.settings);
       this._wireInput();
@@ -727,13 +740,15 @@ export class Game {
 
     if (this.settings.showFps) {
       const s = this.metrics;
+      const gpu = this.render3d.gpuInfo();
       this.hud.updatePerf(
         `fps ${(1000 / Math.max(0.001, s.lastFrame)).toFixed(0)}\n` +
         `sim ${s.lastSim.toFixed(2)}ms\n` +
         `gpu ${s.lastRender.toFixed(2)}ms\n` +
         `draws ${s.drawCalls}\n` +
         `tris ${(s.triangles / 1000).toFixed(0)}k\n` +
-        `ai ${this.enemies.aliveCount}`,
+        `ai ${this.enemies.aliveCount}\n` +
+        `${gpu.software ? '⚠ SOFTWARE' : 'gpu'} ${gpu.short}`,
         true,
       );
     } else {

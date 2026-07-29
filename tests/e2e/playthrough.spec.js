@@ -819,3 +819,116 @@ test('a seeded run is reproducible', async ({ page }) => {
   await page.evaluate(() => window.__UC.freeze(false));
   expect(b).toEqual(a);
 });
+
+/**
+ * Real hardware input.
+ *
+ * Every other test in this file installs a synthetic command frame through
+ * `__UC.input()`. That is the right tool for driving a mission headlessly, but
+ * `Input.buildCommand()` returns on its first branch when a synthetic frame is
+ * present, so the entire device path — the mousedown/mouseup/keydown listeners a
+ * player's hardware actually reaches — had no end-to-end coverage at all. A
+ * `mousedown` handler gated on a flag that was never assigned shipped behind that
+ * gap: fire and aim did nothing on real hardware for the whole build, while all
+ * seventeen tests passed.
+ *
+ * This test touches `__UC` only to read state. Everything it does to the game, it
+ * does with `page.mouse` and `page.keyboard`.
+ */
+test('a real mouse and keyboard drive the game, not just the synthetic input path', async ({ page }) => {
+  test.slow();
+  const cap = await boot(page);
+
+  await page.click('#btn-start');
+  await page.click('#btn-deploy');
+  await page.waitForFunction(() => window.__UC.state().phase === 'approach');
+
+  // Deploying is a user gesture, so the browser grants the pointer lock. Without
+  // it the mouse belongs to the UI and none of the rest of this test is valid.
+  await page.waitForFunction(() => document.pointerLockElement !== null, { timeout: 10_000 });
+
+  const weapon = () => page.evaluate(() => window.__UC.state().weapon);
+  const fov = () => page.evaluate(() => window.__UC.state().camera.fov);
+
+  // ---- left button fires -------------------------------------------------
+  const magBefore = (await weapon()).mag;
+  await page.mouse.down({ button: 'left' });
+  await page.waitForFunction(
+    (m) => window.__UC.state().weapon.mag < m,
+    magBefore,
+    { timeout: 20_000 },
+  );
+  await page.mouse.up({ button: 'left' });
+  const magAfter = (await weapon()).mag;
+  expect(magAfter, 'holding the left mouse button must fire the weapon').toBeLessThan(magBefore);
+
+  // ---- releasing stops the weapon ---------------------------------------
+  await page.waitForTimeout(600);
+  const settled = (await weapon()).mag;
+  await page.waitForTimeout(700);
+  expect(
+    (await weapon()).mag,
+    'the weapon kept firing after the button came up',
+  ).toBe(settled);
+
+  // ---- right button aims -------------------------------------------------
+  const hipFov = await fov();
+  await page.mouse.down({ button: 'right' });
+  await page.waitForFunction((f) => window.__UC.state().camera.fov < f - 5, hipFov, { timeout: 20_000 });
+  const adsFov = await fov();
+  expect(adsFov, 'the right mouse button must pull the camera into ADS').toBeLessThan(hipFov - 5);
+  await page.mouse.up({ button: 'right' });
+  await page.waitForFunction((f) => window.__UC.state().camera.fov > f + 5, adsFov, { timeout: 20_000 });
+
+  // ---- keyboard moves and reloads ---------------------------------------
+  const posBefore = await page.evaluate(() => {
+    const p = window.__UC.state().player;
+    return { x: p.x, z: p.z };
+  });
+  await page.keyboard.down('w');
+  await page.waitForFunction(
+    (p) => Math.hypot(window.__UC.state().player.x - p.x, window.__UC.state().player.z - p.z) > 1,
+    posBefore,
+    { timeout: 20_000 },
+  );
+  await page.keyboard.up('w');
+
+  await page.keyboard.press('r');
+  await page.waitForFunction(() => window.__UC.state().weapon.state === 'reloading', { timeout: 20_000 });
+
+  // ---- Escape pauses -----------------------------------------------------
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.__UC.state().paused === true, { timeout: 20_000 });
+
+  expect(cap.consoleErrors, `console errors:\n${cap.consoleErrors.join('\n')}`).toEqual([]);
+});
+
+/**
+ * The renderer the browser handed the game.
+ *
+ * CI runs on SwiftShader, so this cannot assert that hardware was picked. What it
+ * can assert is that the game reports honestly which renderer it got, rather than
+ * leaving a player to guess why the frame rate is poor.
+ */
+test('the build reports which WebGL renderer it is running on', async ({ page }) => {
+  await boot(page);
+  const gpu = await page.evaluate(() => window.__UC.gpu());
+
+  expect(gpu.renderer, 'the renderer string must be read from the live context').toBeTruthy();
+  expect(typeof gpu.software, 'software fallback must be classified, not guessed').toBe('boolean');
+  expect(gpu.short.length).toBeGreaterThan(0);
+
+  // Whatever it is, it must be on the menu where a player can see it.
+  const buildLine = await page.textContent('#build-line');
+  expect(buildLine).toContain(gpu.short);
+  if (gpu.software) {
+    expect(buildLine, 'a software fallback must be called out, not buried').toContain('software');
+  }
+
+  // Under SwiftShader this is the expected classification; on a GPU-backed run
+  // the same assertion holds with the branch inverted.
+  const isSwiftshader = /swiftshader/i.test(gpu.renderer);
+  expect(gpu.software).toBe(isSwiftshader || /llvmpipe|software/i.test(gpu.renderer));
+
+  await writeFile(`${LOGS}/e2e-gpu.json`, JSON.stringify(gpu, null, 2));
+});
