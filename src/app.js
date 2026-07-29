@@ -574,6 +574,7 @@ export class Game {
 
     // ---- draw ----
     const r = this.render3d.renderer;
+    r.info.reset();
     r.render(this.scene, this.camera);
     if (!this._menuMode && this.inMission) {
       r.autoClear = false;
@@ -584,7 +585,9 @@ export class Game {
 
     this.metrics.endRender();
     this.metrics.sampleRenderer(r);
-    this.metrics.push(frameDt * 1000);
+    // Raw, not the simulation's clamped delta — see Loop.frameDtRaw. Manual
+    // stepping has no wall-clock frame at all, so fall back to what was passed.
+    this.metrics.push((this.loop.frameDtRaw || frameDt) * 1000);
   }
 
   _updateCamera(dt) {

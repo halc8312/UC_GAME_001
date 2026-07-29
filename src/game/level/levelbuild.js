@@ -128,7 +128,7 @@ export class LevelBuilder {
   }
 
   _buildStatic() {
-    /** @type {Map<string, THREE.BufferGeometry[]>} */
+    /** @type {Map<string, {name: string, geos: THREE.BufferGeometry[]}>} */
     const groups = new Map();
     for (const c of this.colliders) {
       if (c.tag === 'yard') continue;    // handled separately, needs its own tiling
@@ -146,13 +146,23 @@ export class LevelBuilder {
         c.kind === RAMP
           ? rampGeometry(w, h, d, c.axis, c.dir)
           : boxWithUV(w, h, d, tile);
-      geo.translate((c.min.x + c.max.x) / 2, (c.min.y + c.max.y) / 2, (c.min.z + c.max.z) / 2);
-      let list = groups.get(name);
-      if (!list) groups.set(name, (list = []));
-      list.push(geo);
+      const cx = (c.min.x + c.max.x) / 2;
+      const cy = (c.min.y + c.max.y) / 2;
+      const cz = (c.min.z + c.max.z) / 2;
+      geo.translate(cx, cy, cz);
+      // Merged per material, not per room. Splitting the level shell into 20 m
+      // cells was tried and measured: tighter bounds do cull, but the extra
+      // meshes cost more draw calls in the shadow cube faces than the culling
+      // saves. The pump hall went 226 -> 374. Triangles are the abundant
+      // resource here (83 k against a 400 k budget); draw calls are the scarce
+      // one, so the geometry stays in as few meshes as possible.
+      const key = name;
+      let bucket = groups.get(key);
+      if (!bucket) groups.set(key, (bucket = { name, geos: [] }));
+      bucket.geos.push(geo);
     }
 
-    for (const [name, geos] of groups) {
+    for (const [, { name, geos }] of groups) {
       const merged = mergeGeometries(geos, false);
       for (const g of geos) g.dispose();
       if (!merged) continue;
@@ -271,11 +281,32 @@ export class LevelBuilder {
   }
 
   _buildDetails() {
+    /**
+     * Static detail props, bucketed by material and merged at the end of the
+     * method.
+     *
+     * Every prop here used to be its own Mesh: pump caps, lamp housings, masts,
+     * mounting plates, hazard stripes, chevrons. 252 of them, carrying 10,944
+     * triangles between them — an average of 43 triangles per draw call. The
+     * dock approach cost 552 draw calls against a 260 budget, and roughly two
+     * thirds of that was the shadow pass re-drawing the same 252 objects.
+     * Merging by material is the same treatment `_buildStatic` already gives the
+     * level shell; it was simply never extended to the props.
+     *
+     * Anything that has to move, animate or be recoloured individually — lever
+     * arms, lamp bulbs with their own cloned material, strobe domes — goes
+     * through `this.root.add()` directly and is untouched by this.
+     *
+     * @type {Map<string, {material: THREE.Material, geos: THREE.BufferGeometry[], castShadow: boolean}>}
+     */
+    const statics = new Map();
     const add = (mesh) => {
-      mesh.matrixAutoUpdate = false;
       mesh.updateMatrix();
-      this.root.add(mesh);
-      this.stats.meshes++;
+      const key = mesh.material.uuid;
+      let bucket = statics.get(key);
+      if (!bucket) statics.set(key, (bucket = { material: mesh.material, geos: [], castShadow: false }));
+      bucket.geos.push(mesh.geometry.clone().applyMatrix4(mesh.matrix));
+      bucket.castShadow = bucket.castShadow || mesh.castShadow;
       return mesh;
     };
 
@@ -520,6 +551,40 @@ export class LevelBuilder {
       const m = new THREE.Mesh(chevGeo, this.materials.get('hazard'));
       m.position.set(x, y, z);
       add(m);
+    }
+
+    this._flushDetailStatics(statics);
+  }
+
+  /** Collapse each material's bucket of detail props into a single mesh. */
+  _flushDetailStatics(statics) {
+    for (const [, bucket] of statics) {
+      let geos = bucket.geos;
+      // mergeGeometries refuses a mix of indexed and non-indexed inputs. Every
+      // primitive used here is indexed today, but a single non-indexed prop
+      // added later would silently return null and delete a whole material's
+      // worth of scenery, so normalise rather than trust it.
+      if (!geos.every((g) => g.index) && geos.some((g) => g.index)) {
+        geos = geos.map((g) => (g.index ? g.toNonIndexed() : g));
+      }
+      const merged = mergeGeometries(geos, false);
+      for (const g of bucket.geos) g.dispose();
+      for (const g of geos) if (!bucket.geos.includes(g)) g.dispose();
+      if (!merged) continue;
+      merged.computeBoundingSphere();
+      const mesh = new THREE.Mesh(merged, bucket.material);
+      mesh.name = 'details';
+      mesh.castShadow = bucket.castShadow;
+      mesh.receiveShadow = true;
+      mesh.matrixAutoUpdate = false;
+      mesh.updateMatrix();
+      this.root.add(mesh);
+      this._geometries.push(merged);
+      this.stats.merged++;
+      this.stats.meshes++;
+      this.stats.triangles += merged.index
+        ? merged.index.count / 3
+        : merged.attributes.position.count / 3;
     }
   }
 

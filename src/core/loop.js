@@ -26,6 +26,12 @@ export class Loop {
     this.timeScale = 1;
     this.lastTime = 0;
     this.frameDt = 0;
+    // The unclamped wall-clock delta. `frameDt` is clamped so an alt-tab cannot
+    // inject a huge dt into the simulation, but that clamp also truncates the
+    // frame-time distribution the profiler reports: under a software rasteriser
+    // every frame exceeds the ceiling and p50, p95 and p99 all come out as
+    // exactly 250 ms, which says nothing. Instrumentation reads this instead.
+    this.frameDtRaw = 0;
     this.stepsLastFrame = 0;
     this.droppedSteps = 0;
     this._raf = 0;
@@ -62,9 +68,11 @@ export class Loop {
     if (!this.running) return;
     this._raf = requestAnimationFrame(this._frame);
     const now = this._now();
+    const raw = (now - this.lastTime) / 1000;
     // Clamp so an alt-tab or a breakpoint cannot inject a huge dt.
-    const frameDt = clamp((now - this.lastTime) / 1000, 0, 0.25);
+    const frameDt = clamp(raw, 0, 0.25);
     this.lastTime = now;
+    this.frameDtRaw = raw;
     this.frameDt = frameDt;
     this.advance(frameDt);
   }

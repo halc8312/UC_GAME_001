@@ -36,6 +36,12 @@ export class RenderStack {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.setClearColor(0x0a1018, 1);
+    // A frame is two render() calls — world, then the viewmodel overlay — and
+    // three clears info.render at the top of each one. Left on autoReset, any
+    // counter read after the frame describes the viewmodel alone: 24 calls and
+    // 476 triangles, whatever the facility is doing. The frame owns the reset
+    // instead, so drawCalls and triangles are the frame's totals.
+    this.renderer.info.autoReset = false;
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(78, 16 / 9, 0.06, 400);

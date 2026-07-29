@@ -192,23 +192,40 @@ add('E4', 'no audio file fetched at runtime',
 
 // ---- F: performance & stability -------------------------------------------
 const b = perf?.budgets;
+const worstSimFrame = perf
+  ? Math.max(...perf.scenes.map((s) => s.metrics.simFrameMs?.mean ?? 0))
+  : null;
 add('F1', 'CPU sim <= 4.0 ms/frame in the heaviest encounter', b ? b.simMsMean.pass : null,
-  'artifacts/perf/performance.json', b ? `${b.simMsMean.measured} ms` : '');
+  'artifacts/perf/performance.json',
+  b ? `${b.simMsMean.measured} ms per 60 Hz step (${worstSimFrame} ms per rendered frame across ~5 catch-up steps)` : '');
 add('F2', 'draw calls <= 260 and triangles <= 400k',
   b ? b.drawCalls.pass && b.triangles.pass : null,
   'artifacts/perf/performance.json',
   b ? `${b.drawCalls.measured} draws, ${b.triangles.measured} tris` : '');
+// A distribution quoted from five frames is not a distribution. The sample
+// count is part of the criterion, not a footnote.
+const dist = perf?.frameTimeDistribution;
 add('F3', 'frame-time distribution with p50/p95/p99 and the software-render caveat',
-  perf ? !!perf.soak?.frameMs && !!perf.caveat : null, 'artifacts/perf/performance.json',
-  perf ? `p50 ${perf.soak.frameMs.p50} p95 ${perf.soak.frameMs.p95} p99 ${perf.soak.frameMs.p99} ms` : '');
+  perf ? !!dist?.frameMs && dist.samples >= 30 && !!perf.caveat : null,
+  'artifacts/perf/performance.json',
+  dist
+    ? `${dist.samples} frames: p50 ${dist.frameMs.p50} p95 ${dist.frameMs.p95} p99 ${dist.frameMs.p99} ms (SwiftShader)`
+    : '');
 add('F4', 'JS heap <= 220 MB after 3 min and not trending up',
   b && perf ? b.heapMB.pass && (perf.soak.heapTrendMBPerMinute ?? 0) < 12 : null,
   'artifacts/perf/performance.json',
   perf ? `peak ${perf.soak.heapPeakMB} MB, trend ${perf.soak.heapTrendMBPerMinute} MB/min` : '');
 add('F5', '3-minute soak with no errors and no leak',
-  perf ? perf.problems.length === 0 && perf.runtimeErrors.length === 0 : null,
+  perf
+    ? perf.problems.length === 0 && perf.runtimeErrors.length === 0 &&
+      (perf.soak.simulatedSeconds ?? 0) >= 180 &&
+      perf.soak.geometriesStart === perf.soak.geometriesEnd
+    : null,
   'artifacts/perf/performance.json',
-  perf ? `${perf.problems.length} problems, geometries ${perf.soak.geometriesStart} -> ${perf.soak.geometriesEnd}` : '');
+  perf
+    ? `${perf.soak.simulatedSeconds ?? 0}s simulated, ${perf.soak.combatKills ?? 0} kills, ` +
+      `${perf.problems.length} problems, geometries ${perf.soak.geometriesStart} -> ${perf.soak.geometriesEnd}`
+    : '');
 add('F6', 'full playthrough completes unattended, no blocker',
   play ? play.result?.success === true : null, 'artifacts/logs/e2e-playthrough.json');
 

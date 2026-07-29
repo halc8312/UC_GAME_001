@@ -10,12 +10,16 @@ export class Metrics {
     this.capacity = capacity;
     this.frame = new Float32Array(capacity);
     this.sim = new Float32Array(capacity);
+    this.simFrame = new Float32Array(capacity);
+    this.steps = new Float32Array(capacity);
     this.render = new Float32Array(capacity);
     this.count = 0;
     this.head = 0;
     this.marks = [];
     this._simStart = 0;
     this._renderStart = 0;
+    this._simFrameAccum = 0;
+    this._stepsThisFrame = 0;
     this.lastSim = 0;
     this.lastRender = 0;
     this.lastFrame = 0;
@@ -33,6 +37,12 @@ export class Metrics {
 
   endSim() {
     this.lastSim = this._now() - this._simStart;
+    // A frame runs 0..MAX_STEPS fixed steps. `sim` is the cost of one 60 Hz step;
+    // `simFrame` is what the frame actually paid for simulation. At the 60 fps
+    // target they are the same number, but under a software rasteriser a frame
+    // absorbs several catch-up steps and only the accumulated figure is honest.
+    this._simFrameAccum += this.lastSim;
+    this._stepsThisFrame++;
   }
 
   beginRender() {
@@ -48,8 +58,15 @@ export class Metrics {
     this.lastFrame = frameMs;
     const i = this.head;
     this.frame[i] = frameMs;
-    this.sim[i] = this.lastSim;
+    // Per-step cost, averaged over the steps this frame actually ran. Recording
+    // `lastSim` instead biases the number towards whichever step happened to end
+    // the frame, and step cost varies by an order of magnitude.
+    this.sim[i] = this._stepsThisFrame ? this._simFrameAccum / this._stepsThisFrame : 0;
+    this.simFrame[i] = this._simFrameAccum;
+    this.steps[i] = this._stepsThisFrame;
     this.render[i] = this.lastRender;
+    this._simFrameAccum = 0;
+    this._stepsThisFrame = 0;
     this.head = (i + 1) % this.capacity;
     if (this.count < this.capacity) this.count++;
   }
@@ -86,6 +103,8 @@ export class Metrics {
   summary() {
     const frames = this._slice(this.frame);
     const sims = this._slice(this.sim);
+    const simFrames = this._slice(this.simFrame);
+    const stepCounts = this._slice(this.steps);
     const renders = this._slice(this.render);
     const fps = frames.filter((f) => f > 0).map((f) => 1000 / f);
     return {
@@ -102,6 +121,16 @@ export class Metrics {
         p95: +percentile(sims, 95).toFixed(3),
         p99: +percentile(sims, 99).toFixed(3),
         max: +Math.max(0, ...sims).toFixed(3),
+      },
+      simFrameMs: {
+        mean: +mean(simFrames).toFixed(3),
+        p95: +percentile(simFrames, 95).toFixed(3),
+        p99: +percentile(simFrames, 99).toFixed(3),
+        max: +Math.max(0, ...simFrames).toFixed(3),
+      },
+      stepsPerFrame: {
+        mean: +mean(stepCounts).toFixed(2),
+        max: +Math.max(0, ...stepCounts).toFixed(0),
       },
       renderMs: {
         mean: +mean(renders).toFixed(3),

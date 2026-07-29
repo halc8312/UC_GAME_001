@@ -459,12 +459,24 @@ export const ENEMY_SPAWNS = [
  * contribution is `intensity / distance²`. A value of ~150 gives a readable pool
  * of light about 6 m below the fixture, which is the scale this facility is built
  * at. Tuning these as if they were legacy 0–1 values leaves every room black.
+ *
+ * `shadow: true` is expensive and deliberately rare. A shadow-casting PointLight
+ * renders the scene into a cube map — six passes — and measured about 73 draw
+ * calls each. Four of them cost 249 of the 340 calls on the dock approach,
+ * against a 260 budget.
+ *
+ * One survives: the pump hall's, which lights the mission's main interior
+ * firefight and has no sun to fall back on. The exterior lamps gave theirs up to
+ * the directional light, which already casts across the dock, the apron and the
+ * helipad for 18 calls total, and the server room gave its up to stay clear of
+ * the budget — that room reads off its emissive rack strips and the data core's
+ * own pool, not off contact shadows.
  */
 export const LIGHTS = [
   { id: 'dock_mast_1', kind: 'lamp', x: -7.2, y: 5.2, z: 50, color: 0xffb15e, intensity: 130, distance: 26, mast: [0, -0.9, 0] },
   { id: 'dock_mast_2', kind: 'lamp', x: 7.2, y: 5.2, z: 40, color: 0xffb15e, intensity: 130, distance: 26, mast: [0, 0.9, 0] },
   { id: 'dock_mast_3', kind: 'lamp', x: -7.2, y: 5.2, z: 36, color: 0xffc27a, intensity: 110, distance: 22, mast: [0, -0.9, 0] },
-  { id: 'apron_lamp', kind: 'lamp', x: 0, y: 5.6, z: 29.4, color: 0xffc27a, intensity: 190, distance: 30, shadow: true, mast: [0, 0, 1.1] },
+  { id: 'apron_lamp', kind: 'lamp', x: 0, y: 5.6, z: 29.4, color: 0xffc27a, intensity: 190, distance: 30, mast: [0, 0, 1.1] },
   { id: 'apron_lamp_w', kind: 'lamp', x: -11, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22, mast: [0, -1.0, 0] },
   { id: 'apron_lamp_e', kind: 'lamp', x: 15, y: 5.2, z: 30, color: 0xffb15e, intensity: 120, distance: 22, mast: [0, 1.0, 0] },
 
@@ -478,7 +490,7 @@ export const LIGHTS = [
   { id: 'corr_lamp_1', kind: 'lamp', x: -1, y: 3.0, z: -5, color: 0xbcd2ff, intensity: 54, distance: 15 },
   { id: 'corr_lamp_2', kind: 'lamp', x: -1, y: 3.0, z: -13, color: 0xbcd2ff, intensity: 54, distance: 15 },
 
-  { id: 'srv_lamp_1', kind: 'lamp', x: -14, y: 4.7, z: -21, color: 0x9fd8ff, intensity: 160, distance: 24, shadow: true },
+  { id: 'srv_lamp_1', kind: 'lamp', x: -14, y: 4.7, z: -21, color: 0x9fd8ff, intensity: 160, distance: 24 },
   { id: 'srv_lamp_2', kind: 'lamp', x: -6, y: 4.7, z: -31, color: 0x9fd8ff, intensity: 150, distance: 24 },
   { id: 'srv_lamp_3', kind: 'lamp', x: -18, y: 4.7, z: -32, color: 0x9fd8ff, intensity: 130, distance: 22 },
   { id: 'srv_lamp_4', kind: 'lamp', x: 2, y: 4.7, z: -20, color: 0xbcd2ff, intensity: 110, distance: 20 },
@@ -490,7 +502,7 @@ export const LIGHTS = [
   { id: 'cw_lamp_2', kind: 'lamp', x: 28, y: CATWALK_Y + 3.0, z: -6, color: 0xffb15e, intensity: 62, distance: 22, mast: [CATWALK_Y, 1.0, 0] },
   { id: 'cw_lamp_3', kind: 'lamp', x: 23, y: CATWALK_Y + 3.0, z: -23, color: 0xffb15e, intensity: 58, distance: 20, mast: [CATWALK_Y, -1.0, 0] },
 
-  { id: 'heli_lamp', kind: 'lamp', x: 37, y: CATWALK_Y + 4.4, z: 1, color: 0xfff0d8, intensity: 130, distance: 34, shadow: true, mast: [CATWALK_Y, 0, 1.4] },
+  { id: 'heli_lamp', kind: 'lamp', x: 37, y: CATWALK_Y + 4.4, z: 1, color: 0xfff0d8, intensity: 130, distance: 34, mast: [CATWALK_Y, 0, 1.4] },
   { id: 'heli_lamp_w', kind: 'lamp', x: 32, y: CATWALK_Y + 2.6, z: -4, color: 0xffb15e, intensity: 48, distance: 18, mast: [CATWALK_Y, -1.0, 0] },
   { id: 'heli_lamp_e', kind: 'lamp', x: 42, y: CATWALK_Y + 2.6, z: 5, color: 0xffb15e, intensity: 48, distance: 18, mast: [CATWALK_Y, 1.0, 0] },
 

@@ -330,6 +330,25 @@ describe('Loop', () => {
     expect([...dts]).toEqual([FIXED_DT]);
   });
 
+  // The clamp must keep protecting the simulation, but it must not be the only
+  // record of how long the frame took: clamped frame times make every
+  // percentile in the perf report read as exactly the ceiling.
+  it('clamps the simulation delta but keeps the raw one for instrumentation', () => {
+    let steps = 0;
+    const loop = new Loop(() => steps++, () => {});
+    let t = 0;
+    loop._now = () => t;
+    globalThis.requestAnimationFrame = () => 0;
+    loop.running = true;
+    loop.lastTime = 0;
+    t = 900;                       // a 900 ms frame, far past the 250 ms clamp
+    loop._frame();
+    expect(loop.frameDt).toBeCloseTo(0.25, 6);
+    expect(loop.frameDtRaw).toBeCloseTo(0.9, 6);
+    expect(steps).toBeLessThanOrEqual(5);
+    loop.stop();
+  });
+
   it('caps catch-up steps instead of spiralling', () => {
     let steps = 0;
     const loop = new Loop(() => steps++, () => {});
@@ -431,8 +450,12 @@ describe('look transform', () => {
 describe('Metrics', () => {
   it('summarises frame samples with percentiles', () => {
     const m = new Metrics(100);
+    let t = 0;
+    m._now = () => t;
     for (let i = 0; i < 50; i++) {
-      m.lastSim = 1;
+      m.beginSim();
+      t += 1;
+      m.endSim();
       m.lastRender = 2;
       m.push(16 + (i % 5));
     }
@@ -441,6 +464,47 @@ describe('Metrics', () => {
     expect(s.frameMs.p50).toBeGreaterThan(15);
     expect(s.frameMs.p99).toBeGreaterThanOrEqual(s.frameMs.p50);
     expect(s.simMs.mean).toBeCloseTo(1, 3);
+    expect(s.simFrameMs.mean).toBeCloseTo(1, 3);
+    expect(s.stepsPerFrame.mean).toBeCloseTo(1, 3);
+  });
+
+  // The 4 ms budget in GAME_SPEC is the cost of one 60 Hz step. A frame that
+  // catches up five steps pays five times that, and reporting either number as
+  // the other is how a perf report ends up lying in one direction or the other.
+  it('separates per-step cost from the frame total when the loop catches up', () => {
+    const m = new Metrics(100);
+    let t = 0;
+    m._now = () => t;
+    for (let frame = 0; frame < 20; frame++) {
+      for (let step = 0; step < 5; step++) {
+        m.beginSim();
+        t += 2;
+        m.endSim();
+      }
+      m.push(250);
+    }
+    const s = m.summary();
+    expect(s.simMs.mean).toBeCloseTo(2, 3);
+    expect(s.simFrameMs.mean).toBeCloseTo(10, 3);
+    expect(s.stepsPerFrame.mean).toBeCloseTo(5, 3);
+    expect(s.stepsPerFrame.max).toBe(5);
+  });
+
+  // A paused frame runs no steps at all; the per-step average must not inherit
+  // the previous frame's cost, and must not divide by zero.
+  it('records zero simulation cost for a frame that runs no steps', () => {
+    const m = new Metrics(10);
+    let t = 0;
+    m._now = () => t;
+    m.beginSim();
+    t += 3;
+    m.endSim();
+    m.push(16);
+    m.push(16);
+    const s = m.summary();
+    expect(s.simMs.mean).toBeCloseTo(1.5, 3);
+    expect(s.simFrameMs.max).toBeCloseTo(3, 3);
+    expect(s.stepsPerFrame.mean).toBeCloseTo(0.5, 3);
   });
 
   it('is a bounded ring buffer', () => {

@@ -1,0 +1,1165 @@
+{
+  "generatedAt": "2026-07-29T07:43:52.912Z",
+  "environment": {
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.37 Safari/537.36",
+    "devicePixelRatio": 1,
+    "hardwareConcurrency": 4,
+    "heapLimitMB": 4096
+  },
+  "caveat": "Rendered through SwiftShader (software WebGL). renderMs and fps are a pessimistic lower bound and must not be read as GPU performance. simMs, drawCalls, triangles and heapMB are hardware-independent.",
+  "scenes": [
+    {
+      "name": "dock_approach",
+      "metrics": {
+        "samples": 7,
+        "frameMs": {
+          "mean": 3229.014,
+          "p50": 2966.3,
+          "p95": 5136.4,
+          "p99": 5136.4,
+          "max": 5136.4
+        },
+        "simMs": {
+          "mean": 0.194,
+          "p95": 0.6,
+          "p99": 0.6,
+          "max": 0.6
+        },
+        "simFrameMs": {
+          "mean": 0.971,
+          "p95": 3,
+          "p99": 3,
+          "max": 3
+        },
+        "stepsPerFrame": {
+          "mean": 5,
+          "max": 5
+        },
+        "renderMs": {
+          "mean": 11.6,
+          "p95": 53.2,
+          "max": 53.2
+        },
+        "fps": {
+          "mean": 0.32,
+          "p05": 0.19
+        },
+        "drawCalls": 182,
+        "triangles": 54082,
+        "programs": 17,
+        "geometries": 62,
+        "textures": 43,
+        "heapMB": 15.4,
+        "marks": [],
+        "pools": {
+          "decals": 0,
+          "sparks": 0,
+          "tracers": 0,
+          "starved": 0
+        },
+        "audio": {
+          "activeVoices": 2,
+          "peakVoices": 3,
+          "played": 4,
+          "dropped": 0,
+          "failed": 0,
+          "ready": true,
+          "events": 4
+        },
+        "level": {
+          "merged": 17,
+          "meshes": 7,
+          "triangles": 7956
+        }
+      },
+      "enemiesAlive": 1,
+      "phase": "approach"
+    },
+    {
+      "name": "pump_hall_firefight",
+      "metrics": {
+        "samples": 5,
+        "frameMs": {
+          "mean": 4684.14,
+          "p50": 3867.9,
+          "p95": 8083.2,
+          "p99": 8083.2,
+          "max": 8083.2
+        },
+        "simMs": {
+          "mean": 0.728,
+          "p95": 1.4,
+          "p99": 1.4,
+          "max": 1.4
+        },
+        "simFrameMs": {
+          "mean": 3.64,
+          "p95": 7,
+          "p99": 7,
+          "max": 7
+        },
+        "stepsPerFrame": {
+          "mean": 5,
+          "max": 5
+        },
+        "renderMs": {
+          "mean": 840.26,
+          "p95": 4183.4,
+          "max": 4183.4
+        },
+        "fps": {
+          "mean": 0.23,
+          "p05": 0.12
+        },
+        "drawCalls": 180,
+        "triangles": 51730,
+        "programs": 26,
+        "geometries": 63,
+        "textures": 43,
+        "heapMB": 16,
+        "marks": [],
+        "pools": {
+          "decals": 0,
+          "sparks": 0,
+          "tracers": 0,
+          "starved": 0
+        },
+        "audio": {
+          "activeVoices": 2,
+          "peakVoices": 14,
+          "played": 32,
+          "dropped": 0,
+          "failed": 0,
+          "ready": true,
+          "events": 32
+        },
+        "level": {
+          "merged": 17,
+          "meshes": 7,
+          "triangles": 7956
+        }
+      },
+      "enemiesAlive": 3,
+      "phase": "pump_hall"
+    },
+    {
+      "name": "server_room",
+      "metrics": {
+        "samples": 6,
+        "frameMs": {
+          "mean": 3386.867,
+          "p50": 3286.4,
+          "p95": 3777.3,
+          "p99": 3777.3,
+          "max": 3777.3
+        },
+        "simMs": {
+          "mean": 0.4,
+          "p95": 0.52,
+          "p99": 0.52,
+          "max": 0.52
+        },
+        "simFrameMs": {
+          "mean": 2,
+          "p95": 2.6,
+          "p99": 2.6,
+          "max": 2.6
+        },
+        "stepsPerFrame": {
+          "mean": 5,
+          "max": 5
+        },
+        "renderMs": {
+          "mean": 3.567,
+          "p95": 6.2,
+          "max": 6.2
+        },
+        "fps": {
+          "mean": 0.3,
+          "p05": 0.26
+        },
+        "drawCalls": 144,
+        "triangles": 48306,
+        "programs": 26,
+        "geometries": 63,
+        "textures": 43,
+        "heapMB": 16.3,
+        "marks": [],
+        "pools": {
+          "decals": 6,
+          "sparks": 9,
+          "tracers": 0,
+          "starved": 0
+        },
+        "audio": {
+          "activeVoices": 4,
+          "peakVoices": 14,
+          "played": 51,
+          "dropped": 0,
+          "failed": 0,
+          "ready": true,
+          "events": 51
+        },
+        "level": {
+          "merged": 17,
+          "meshes": 7,
+          "triangles": 7956
+        }
+      },
+      "enemiesAlive": 3,
+      "phase": "server_room"
+    },
+    {
+      "name": "extraction_hold_heaviest",
+      "metrics": {
+        "samples": 12,
+        "frameMs": {
+          "mean": 2637.858,
+          "p50": 2626.4,
+          "p95": 2965.6,
+          "p99": 2965.6,
+          "max": 2965.6
+        },
+        "simMs": {
+          "mean": 0.422,
+          "p95": 1.06,
+          "p99": 1.06,
+          "max": 1.06
+        },
+        "simFrameMs": {
+          "mean": 2.108,
+          "p95": 5.3,
+          "p99": 5.3,
+          "max": 5.3
+        },
+        "stepsPerFrame": {
+          "mean": 5,
+          "max": 5
+        },
+        "renderMs": {
+          "mean": 2.65,
+          "p95": 4,
+          "max": 4
+        },
+        "fps": {
+          "mean": 0.38,
+          "p05": 0.34
+        },
+        "drawCalls": 128,
+        "triangles": 47754,
+        "programs": 26,
+        "geometries": 63,
+        "textures": 43,
+        "heapMB": 16.6,
+        "marks": [],
+        "pools": {
+          "decals": 11,
+          "sparks": 9,
+          "tracers": 0,
+          "starved": 0
+        },
+        "audio": {
+          "activeVoices": 5,
+          "peakVoices": 14,
+          "played": 85,
+          "dropped": 0,
+          "failed": 0,
+          "ready": true,
+          "events": 85
+        },
+        "level": {
+          "merged": 17,
+          "meshes": 7,
+          "triangles": 7956
+        }
+      },
+      "enemiesAlive": 2,
+      "phase": "extraction"
+    }
+  ],
+  "frameTimeDistribution": {
+    "samples": 54,
+    "frameMs": {
+      "mean": 3769.817,
+      "p50": 3877.3,
+      "p95": 5001.6,
+      "p99": 5177.1,
+      "max": 5177.1
+    },
+    "fps": {
+      "mean": 0.28,
+      "p05": 0.2
+    },
+    "renderMs": {
+      "mean": 3.53,
+      "p95": 6.4,
+      "max": 7.9
+    }
+  },
+  "heaviestScene": "dock_approach",
+  "soak": {
+    "seconds": 180,
+    "simulatedSeconds": 180,
+    "combatKills": 1,
+    "audioEvents": 2000,
+    "sampleEverySeconds": 5,
+    "samples": [
+      {
+        "atSeconds": 5.1,
+        "heapMB": 18.1,
+        "drawCalls": 128,
+        "triangles": 47754,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.6,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 0,
+        "pools": {
+          "decals": 26,
+          "sparks": 295,
+          "tracers": 10,
+          "starved": 0
+        },
+        "audioVoices": 24,
+        "audioDropped": 53,
+        "audioEvents": 224
+      },
+      {
+        "atSeconds": 10.2,
+        "heapMB": 18.6,
+        "drawCalls": 181,
+        "triangles": 52770,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.375,
+        "fps": 0.33,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 47,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 32
+        },
+        "audioVoices": 24,
+        "audioDropped": 97,
+        "audioEvents": 325
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 17.9,
+        "drawCalls": 194,
+        "triangles": 54206,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 33
+        },
+        "audioVoices": 24,
+        "audioDropped": 133,
+        "audioEvents": 411
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 18.9,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.17,
+        "fps": 0.19,
+        "enemiesAlive": 0,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 28,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 35
+        },
+        "audioVoices": 24,
+        "audioDropped": 157,
+        "audioEvents": 480
+      },
+      {
+        "atSeconds": 15.2,
+        "heapMB": 17.3,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.139,
+        "fps": 0.22,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 37,
+          "sparks": 272,
+          "tracers": 10,
+          "starved": 35
+        },
+        "audioVoices": 24,
+        "audioDropped": 178,
+        "audioEvents": 541
+      },
+      {
+        "atSeconds": 20.3,
+        "heapMB": 18.6,
+        "drawCalls": 202,
+        "triangles": 50918,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.147,
+        "fps": 0.22,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 64,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 54
+        },
+        "audioVoices": 24,
+        "audioDropped": 242,
+        "audioEvents": 671
+      },
+      {
+        "atSeconds": 25.3,
+        "heapMB": 20.2,
+        "drawCalls": 211,
+        "triangles": 52934,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.154,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 86,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 83
+        },
+        "audioVoices": 24,
+        "audioDropped": 302,
+        "audioEvents": 791
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 20.7,
+        "drawCalls": 168,
+        "triangles": 51226,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 84
+        },
+        "audioVoices": 24,
+        "audioDropped": 339,
+        "audioEvents": 877
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 18.3,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.188,
+        "fps": 0.33,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 17,
+          "sparks": 270,
+          "tracers": 0,
+          "starved": 84
+        },
+        "audioVoices": 24,
+        "audioDropped": 352,
+        "audioEvents": 911
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 19.3,
+        "drawCalls": 158,
+        "triangles": 49010,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 84
+        },
+        "audioVoices": 24,
+        "audioDropped": 386,
+        "audioEvents": 994
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 18.4,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.153,
+        "fps": 0.21,
+        "enemiesAlive": 0,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 28,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 86
+        },
+        "audioVoices": 24,
+        "audioDropped": 411,
+        "audioEvents": 1064
+      },
+      {
+        "atSeconds": 15.2,
+        "heapMB": 18.1,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.105,
+        "fps": 0.21,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 37,
+          "sparks": 272,
+          "tracers": 10,
+          "starved": 86
+        },
+        "audioVoices": 24,
+        "audioDropped": 432,
+        "audioEvents": 1124
+      },
+      {
+        "atSeconds": 20.3,
+        "heapMB": 19.1,
+        "drawCalls": 202,
+        "triangles": 50918,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.097,
+        "fps": 0.22,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 64,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 105
+        },
+        "audioVoices": 24,
+        "audioDropped": 497,
+        "audioEvents": 1255
+      },
+      {
+        "atSeconds": 25.3,
+        "heapMB": 20.9,
+        "drawCalls": 211,
+        "triangles": 52934,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.115,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 86,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 134
+        },
+        "audioVoices": 24,
+        "audioDropped": 558,
+        "audioEvents": 1375
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 18,
+        "drawCalls": 168,
+        "triangles": 51226,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 135
+        },
+        "audioVoices": 24,
+        "audioDropped": 595,
+        "audioEvents": 1460
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 18.5,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.11,
+        "fps": 0.37,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 17,
+          "sparks": 270,
+          "tracers": 0,
+          "starved": 135
+        },
+        "audioVoices": 24,
+        "audioDropped": 609,
+        "audioEvents": 1495
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 19.8,
+        "drawCalls": 159,
+        "triangles": 49022,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 135
+        },
+        "audioVoices": 24,
+        "audioDropped": 644,
+        "audioEvents": 1578
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 17.7,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.114,
+        "fps": 0.22,
+        "enemiesAlive": 0,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 28,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 137
+        },
+        "audioVoices": 24,
+        "audioDropped": 669,
+        "audioEvents": 1648
+      },
+      {
+        "atSeconds": 15.2,
+        "heapMB": 18.8,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.096,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 37,
+          "sparks": 272,
+          "tracers": 10,
+          "starved": 137
+        },
+        "audioVoices": 24,
+        "audioDropped": 690,
+        "audioEvents": 1708
+      },
+      {
+        "atSeconds": 20.3,
+        "heapMB": 20.4,
+        "drawCalls": 202,
+        "triangles": 50918,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.093,
+        "fps": 0.24,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 64,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 156
+        },
+        "audioVoices": 24,
+        "audioDropped": 754,
+        "audioEvents": 1838
+      },
+      {
+        "atSeconds": 25.3,
+        "heapMB": 18.4,
+        "drawCalls": 211,
+        "triangles": 52934,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.103,
+        "fps": 0.24,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 86,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 185
+        },
+        "audioVoices": 24,
+        "audioDropped": 816,
+        "audioEvents": 1959
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 19.5,
+        "drawCalls": 168,
+        "triangles": 51226,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 186
+        },
+        "audioVoices": 24,
+        "audioDropped": 853,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 19.8,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.109,
+        "fps": 0.36,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 17,
+          "sparks": 270,
+          "tracers": 0,
+          "starved": 186
+        },
+        "audioVoices": 24,
+        "audioDropped": 866,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 17.9,
+        "drawCalls": 159,
+        "triangles": 49022,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 186
+        },
+        "audioVoices": 24,
+        "audioDropped": 900,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 18.5,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.121,
+        "fps": 0.22,
+        "enemiesAlive": 0,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 28,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 188
+        },
+        "audioVoices": 24,
+        "audioDropped": 924,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 15.2,
+        "heapMB": 19.3,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.095,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 37,
+          "sparks": 272,
+          "tracers": 10,
+          "starved": 188
+        },
+        "audioVoices": 24,
+        "audioDropped": 945,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 20.3,
+        "heapMB": 19.1,
+        "drawCalls": 202,
+        "triangles": 50918,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.097,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 64,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 207
+        },
+        "audioVoices": 24,
+        "audioDropped": 1009,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 25.3,
+        "heapMB": 18.2,
+        "drawCalls": 211,
+        "triangles": 52934,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.115,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 86,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 236
+        },
+        "audioVoices": 24,
+        "audioDropped": 1069,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 17.8,
+        "drawCalls": 168,
+        "triangles": 51226,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 237
+        },
+        "audioVoices": 24,
+        "audioDropped": 1106,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 19.1,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.109,
+        "fps": 0.36,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 17,
+          "sparks": 270,
+          "tracers": 0,
+          "starved": 237
+        },
+        "audioVoices": 24,
+        "audioDropped": 1119,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 20.1,
+        "drawCalls": 159,
+        "triangles": 49022,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 237
+        },
+        "audioVoices": 24,
+        "audioDropped": 1154,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 10.1,
+        "heapMB": 17.5,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.103,
+        "fps": 0.21,
+        "enemiesAlive": 0,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 28,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 239
+        },
+        "audioVoices": 24,
+        "audioDropped": 1179,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 15.2,
+        "heapMB": 18.3,
+        "drawCalls": 170,
+        "triangles": 50534,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.087,
+        "fps": 0.22,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 37,
+          "sparks": 272,
+          "tracers": 10,
+          "starved": 239
+        },
+        "audioVoices": 24,
+        "audioDropped": 1200,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 20.3,
+        "heapMB": 20.5,
+        "drawCalls": 202,
+        "triangles": 50918,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.088,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 64,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 258
+        },
+        "audioVoices": 24,
+        "audioDropped": 1264,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 25.3,
+        "heapMB": 18.2,
+        "drawCalls": 211,
+        "triangles": 52934,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0.099,
+        "fps": 0.23,
+        "enemiesAlive": 2,
+        "enemiesKilled": 2,
+        "pools": {
+          "decals": 86,
+          "sparks": 320,
+          "tracers": 10,
+          "starved": 287
+        },
+        "audioVoices": 24,
+        "audioDropped": 1325,
+        "audioEvents": 2000
+      },
+      {
+        "atSeconds": 5,
+        "heapMB": 17.9,
+        "drawCalls": 168,
+        "triangles": 51226,
+        "geometries": 63,
+        "textures": 43,
+        "programs": 26,
+        "simMean": 0,
+        "fps": 0,
+        "enemiesAlive": 1,
+        "enemiesKilled": 1,
+        "pools": {
+          "decals": 16,
+          "sparks": 191,
+          "tracers": 10,
+          "starved": 288
+        },
+        "audioVoices": 24,
+        "audioDropped": 1362,
+        "audioEvents": 2000
+      }
+    ],
+    "frameMs": {
+      "mean": 2956.1,
+      "p50": 2956.1,
+      "p95": 2956.1,
+      "p99": 2956.1,
+      "max": 2956.1
+    },
+    "simMs": {
+      "mean": 0.115,
+      "p95": 0.115,
+      "p99": 0.115,
+      "max": 0.115
+    },
+    "renderMs": {
+      "mean": 4.8,
+      "p95": 4.8,
+      "max": 4.8
+    },
+    "fps": {
+      "mean": 0.34,
+      "p05": 0.34
+    },
+    "heapStartMB": 18.1,
+    "heapEndMB": 17.9,
+    "heapPeakMB": 20.9,
+    "heapTrendMBPerMinute": 0.004,
+    "geometriesStart": 63,
+    "geometriesEnd": 63,
+    "texturesStart": 43,
+    "texturesEnd": 43,
+    "poolStarvation": 288,
+    "poolStarvationInRealtimeScenes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "finalPhase": "extraction"
+  },
+  "budgets": {
+    "drawCalls": {
+      "budget": 260,
+      "measured": 182,
+      "pass": true
+    },
+    "triangles": {
+      "budget": 400000,
+      "measured": 54082,
+      "pass": true
+    },
+    "simMsMean": {
+      "budget": 4,
+      "measured": 0.728,
+      "pass": true
+    },
+    "heapMB": {
+      "budget": 220,
+      "measured": 20.9,
+      "pass": true
+    }
+  },
+  "problems": [],
+  "runtimeErrors": []
+}
